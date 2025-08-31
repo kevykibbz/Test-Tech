@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit, signal, computed, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -6,7 +6,6 @@ import { AsyncSubject, distinctUntilChanged, filter, map, Subscription, takeUnti
 import { LegalMatter } from '../legal-matter';
 import { DEFAULT_PAGE_SIZE, LegalMatterService } from '../legal-matter.service';
 import { PaginatorComponent } from '../paginator/paginator.component';
-import { MOCK_LEGAL_MATTERS } from '../../mocks/legal-matters';
 import { SocketService } from '../socket.service';
 import { SocketState } from '../socket-state';
 import { LawyerAssignmentModalComponent } from '../lawyer-assignment-modal/lawyer-assignment-modal.component';
@@ -21,26 +20,41 @@ import { Lawyer } from '../lawyer';
   providers: [],
 })
 export class LegalMattersComponent implements OnInit, OnDestroy {
-  legalMatterCount?: number;
-  legalMatters: LegalMatter[] = [];
-  legalMattersPerPage = DEFAULT_PAGE_SIZE;
-  loading = true; // Initialize loading to true
-  page = 0; // Initialize page to 0
-  showCreateForm = false; // Add flag for showing create form
-  newLegalMatter: Partial<LegalMatter> = {}; // New legal matter form data
-  creating = false; // Flag for create operation
-  editingLegalMatter: LegalMatter | null = null; // Currently editing legal matter
-  showEditForm = false; // Flag for showing edit form
-  deleting = false; // Flag for delete operation
-  selectedLegalMatter: LegalMatter | null = null; // For viewing details
-  showDetailsModal = false; // Flag for showing details modal
+  // Signals for reactive state management
+  legalMatterCount = signal<number | undefined>(undefined);
+  legalMatters = signal<LegalMatter[]>([]);
+  legalMattersPerPage = signal(DEFAULT_PAGE_SIZE);
+  loading = signal(true);
+  page = signal(0);
+  showCreateForm = signal(false);
+  newLegalMatter: Partial<LegalMatter> = {}; // Keep as regular property for form binding
+  creating = signal(false);
+  editingLegalMatter = signal<LegalMatter | null>(null);
+  showEditForm = signal(false);
+  deleting = signal(false);
+  selectedLegalMatter = signal<LegalMatter | null>(null);
+  showDetailsModal = signal(false);
   
-  // Lawyer assignment properties
-  showLawyerAssignmentModal = false;
-  selectedLegalMattersForAssignment: string[] = [];
-  selectedLegalMattersData: { [id: string]: boolean } = {};
-  lawyers: Lawyer[] = [];
-  isMultiSelectMode = false;
+  // Lawyer assignment signals
+  showLawyerAssignmentModal = signal(false);
+  selectedLegalMattersForAssignment = signal<string[]>([]);
+  selectedLegalMattersData = signal<{ [id: string]: boolean }>({});
+  lawyers = signal<Lawyer[]>([]);
+  isMultiSelectMode = signal(false);
+
+  // Computed signals for derived state
+  selectedCount = computed(() => {
+    const selected = this.selectedLegalMattersData();
+    return Object.values(selected).filter(Boolean).length;
+  });
+
+  hasSelection = computed(() => this.selectedCount() > 0);
+
+  allSelected = computed(() => {
+    const matters = this.legalMatters();
+    const selected = this.selectedLegalMattersData();
+    return matters.length > 0 && matters.every(m => selected[m.id!]);
+  });
 
   private destroy$ = new AsyncSubject<any>();
   private legalMatterListChangeListener?: Subscription;
@@ -65,7 +79,7 @@ export class LegalMattersComponent implements OnInit, OnDestroy {
     this.destroy$.complete();
   }
   createLegalMatter(): void {
-    this.showCreateForm = true;
+    this.showCreateForm.set(true);
     this.newLegalMatter = {
       matterName: '',
       contractType: '',
@@ -77,7 +91,7 @@ export class LegalMattersComponent implements OnInit, OnDestroy {
   }
 
   cancelCreate(): void {
-    this.showCreateForm = false;
+    this.showCreateForm.set(false);
     this.newLegalMatter = {};
   }
 
@@ -87,74 +101,75 @@ export class LegalMattersComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.creating = true;
+    this.creating.set(true);
     
     this.legalMatterService.createLegalMatter(this.newLegalMatter).subscribe({
       next: (createdMatter) => {
         console.log('Legal matter created:', createdMatter);
-        this.showCreateForm = false;
+        this.showCreateForm.set(false);
         this.newLegalMatter = {};
-        this.creating = false;
+        this.creating.set(false);
         // Reload the list to show the new matter
-        this.loadLegalMatters(this.page || 1);
+        this.loadLegalMatters(this.page() || 1);
         this.reloadLegalMatterCount();
       },
       error: (err) => {
         console.error('Error creating legal matter:', err);
         alert('Failed to create legal matter: ' + (err.error?.error || err.message));
-        this.creating = false;
+        this.creating.set(false);
       }
     });
   }
 
   // View legal matter details
   viewLegalMatter(legalMatter: LegalMatter): void {
-    this.selectedLegalMatter = legalMatter;
-    this.showDetailsModal = true;
+    this.selectedLegalMatter.set(legalMatter);
+    this.showDetailsModal.set(true);
   }
 
   closeDetailsModal(): void {
-    this.showDetailsModal = false;
-    this.selectedLegalMatter = null;
+    this.showDetailsModal.set(false);
+    this.selectedLegalMatter.set(null);
   }
 
   // Edit legal matter
   editLegalMatter(legalMatter: LegalMatter): void {
-    this.editingLegalMatter = new LegalMatter(legalMatter);
-    this.showEditForm = true;
+    this.editingLegalMatter.set(new LegalMatter(legalMatter));
+    this.showEditForm.set(true);
   }
 
   cancelEdit(): void {
-    this.showEditForm = false;
-    this.editingLegalMatter = null;
+    this.showEditForm.set(false);
+    this.editingLegalMatter.set(null);
   }
 
   submitEditLegalMatter(): void {
-    if (!this.editingLegalMatter?.matterName?.trim()) {
+    const editing = this.editingLegalMatter();
+    if (!editing?.matterName?.trim()) {
       alert('Matter name is required');
       return;
     }
 
-    if (!this.editingLegalMatter?.id) {
+    if (!editing?.id) {
       alert('Legal matter ID is missing');
       return;
     }
 
-    this.creating = true;
+    this.creating.set(true);
     
-    this.legalMatterService.updateLegalMatter(this.editingLegalMatter.id, this.editingLegalMatter).subscribe({
+    this.legalMatterService.updateLegalMatter(editing.id, editing).subscribe({
       next: (updatedMatter) => {
         console.log('Legal matter updated:', updatedMatter);
-        this.showEditForm = false;
-        this.editingLegalMatter = null;
-        this.creating = false;
+        this.showEditForm.set(false);
+        this.editingLegalMatter.set(null);
+        this.creating.set(false);
         // Reload the list to show the updated matter
-        this.loadLegalMatters(this.page || 1);
+        this.loadLegalMatters(this.page() || 1);
       },
       error: (err) => {
         console.error('Error updating legal matter:', err);
         alert('Failed to update legal matter: ' + (err.error?.error || err.message));
-        this.creating = false;
+        this.creating.set(false);
       }
     });
   }
@@ -171,59 +186,59 @@ export class LegalMattersComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.deleting = true;
+    this.deleting.set(true);
     
     this.legalMatterService.deleteLegalMatter(legalMatter.id).subscribe({
       next: () => {
         console.log('Legal matter deleted:', legalMatter.id);
-        this.deleting = false;
+        this.deleting.set(false);
         // Reload the list to remove the deleted matter
-        this.loadLegalMatters(this.page || 1);
+        this.loadLegalMatters(this.page() || 1);
         this.reloadLegalMatterCount();
       },
       error: (err) => {
         console.error('Error deleting legal matter:', err);
         alert('Failed to delete legal matter: ' + (err.error?.error || err.message));
-        this.deleting = false;
+        this.deleting.set(false);
       }
     });
   }
 
   onPageChange(page: number): void {
     // Only load if it's a different page to avoid duplicate calls
-    if (this.page !== page) {
+    if (this.page() !== page) {
       this.loadLegalMatters(page);
     }
   }
 
   private loadLegalMatters(page: number): void {
-    this.page = page;
-    this.loading = true;
+    this.page.set(page);
+    this.loading.set(true);
     
     console.log('Loading legal matters for page:', page);
 
     this.legalMatterService.getLegalMatters(page).subscribe({
       next: (legalMatters) => {
         console.log('Received legal matters:', legalMatters);
-        this.legalMatters = legalMatters;
-        this.loading = false;
+        this.legalMatters.set(legalMatters);
+        this.loading.set(false);
       },
       error: (err) => {
         console.error('Error loading legal matters', err);
-        this.legalMatters = [];
-        this.loading = false;
+        this.legalMatters.set([]);
+        this.loading.set(false);
       },
     });
   }
 
   private reloadLegalMatters(): void {
-    this.loadLegalMatters(this.page);
+    this.loadLegalMatters(this.page());
   }
 
   private reloadLegalMatterCount(): void {
     this.legalMatterService.getLegalMatterCount().subscribe({
       next: (count) => {
-        this.legalMatterCount = count;
+        this.legalMatterCount.set(count);
       },
       error: (err) => {
         console.error('Error loading legal matter count', err);
@@ -280,7 +295,7 @@ export class LegalMattersComponent implements OnInit, OnDestroy {
   loadLawyers(): void {
     this.lawyerService.getLawyers(0, 1000).subscribe({
       next: (lawyers) => {
-        this.lawyers = lawyers;
+        this.lawyers.set(lawyers);
       },
       error: (error) => {
         console.error('Error loading lawyers:', error);
@@ -289,46 +304,56 @@ export class LegalMattersComponent implements OnInit, OnDestroy {
   }
 
   toggleMultiSelectMode(): void {
-    this.isMultiSelectMode = !this.isMultiSelectMode;
-    if (!this.isMultiSelectMode) {
-      this.selectedLegalMattersData = {};
-      this.selectedLegalMattersForAssignment = [];
+    this.isMultiSelectMode.update(mode => !mode);
+    if (!this.isMultiSelectMode()) {
+      this.selectedLegalMattersData.set({});
+      this.selectedLegalMattersForAssignment.set([]);
     }
   }
 
   toggleLegalMatterSelection(legalMatterId: string): void {
-    if (this.selectedLegalMattersData[legalMatterId]) {
-      delete this.selectedLegalMattersData[legalMatterId];
-      this.selectedLegalMattersForAssignment = this.selectedLegalMattersForAssignment.filter(id => id !== legalMatterId);
+    const currentData = { ...this.selectedLegalMattersData() };
+    const currentAssignment = [...this.selectedLegalMattersForAssignment()];
+    
+    if (currentData[legalMatterId]) {
+      delete currentData[legalMatterId];
+      const updatedAssignment = currentAssignment.filter(id => id !== legalMatterId);
+      this.selectedLegalMattersForAssignment.set(updatedAssignment);
     } else {
-      this.selectedLegalMattersData[legalMatterId] = true;
-      this.selectedLegalMattersForAssignment.push(legalMatterId);
+      currentData[legalMatterId] = true;
+      currentAssignment.push(legalMatterId);
+      this.selectedLegalMattersForAssignment.set(currentAssignment);
     }
+    this.selectedLegalMattersData.set(currentData);
   }
 
   selectAllLegalMatters(): void {
-    this.selectedLegalMattersData = {};
-    this.selectedLegalMattersForAssignment = [];
-    this.legalMatters.forEach(matter => {
+    const newData: { [id: string]: boolean } = {};
+    const newAssignment: string[] = [];
+    
+    this.legalMatters().forEach(matter => {
       if (matter.id) {
-        this.selectedLegalMattersData[matter.id] = true;
-        this.selectedLegalMattersForAssignment.push(matter.id);
+        newData[matter.id] = true;
+        newAssignment.push(matter.id);
       }
     });
+    
+    this.selectedLegalMattersData.set(newData);
+    this.selectedLegalMattersForAssignment.set(newAssignment);
   }
 
   clearSelection(): void {
-    this.selectedLegalMattersData = {};
-    this.selectedLegalMattersForAssignment = [];
+    this.selectedLegalMattersData.set({});
+    this.selectedLegalMattersForAssignment.set([]);
   }
 
   openLawyerAssignmentModal(legalMatterId?: string): void {
     if (legalMatterId) {
       // Single assignment
-      this.selectedLegalMattersForAssignment = [legalMatterId];
+      this.selectedLegalMattersForAssignment.set([legalMatterId]);
     }
     // For multiple assignment, use already selected matters
-    this.showLawyerAssignmentModal = true;
+    this.showLawyerAssignmentModal.set(true);
   }
 
   assignLawyer(legalMatter: LegalMatter): void {
@@ -338,45 +363,42 @@ export class LegalMattersComponent implements OnInit, OnDestroy {
   }
 
   closeLawyerAssignmentModal(): void {
-    this.showLawyerAssignmentModal = false;
-    if (!this.isMultiSelectMode) {
-      this.selectedLegalMattersForAssignment = [];
+    this.showLawyerAssignmentModal.set(false);
+    if (!this.isMultiSelectMode()) {
+      this.selectedLegalMattersForAssignment.set([]);
     }
   }
 
   onLawyerAssignmentComplete(event: {lawyerId: string, action: 'assign' | 'unassign'}): void {
     if (event.action === 'assign') {
-      console.log(`Assigned lawyer ${event.lawyerId} to legal matters:`, this.selectedLegalMattersForAssignment);
+      console.log(`Assigned lawyer ${event.lawyerId} to legal matters:`, this.selectedLegalMattersForAssignment());
     } else {
       console.log('Unassigned lawyer from legal matter');
     }
     
     // Reload the legal matters to show updated assignments
-    this.loadLegalMatters(this.page + 1);
+    this.loadLegalMatters(this.page() + 1);
     
     // Clear selection if not in multi-select mode
-    if (!this.isMultiSelectMode) {
+    if (!this.isMultiSelectMode()) {
       this.clearSelection();
     }
   }
 
   getLawyerName(lawyerId: string | null | undefined): string {
     if (!lawyerId) return 'Unassigned';
-    const lawyer = this.lawyers.find(l => l.id === lawyerId);
+    const lawyer = this.lawyers().find(l => l.id === lawyerId);
     return lawyer ? lawyer.fullName : 'Unknown Lawyer';
   }
 
-  get selectedCount(): number {
-    return this.selectedLegalMattersForAssignment.length;
-  }
-
   get hasSelectedItems(): boolean {
-    return this.selectedLegalMattersForAssignment.length > 0;
+    return this.selectedLegalMattersForAssignment().length > 0;
   }
 
   get currentLawyerIdForAssignment(): string | null {
-    if (this.selectedLegalMattersForAssignment.length === 1) {
-      const matter = this.legalMatters.find(lm => lm.id === this.selectedLegalMattersForAssignment[0]);
+    const assignments = this.selectedLegalMattersForAssignment();
+    if (assignments.length === 1) {
+      const matter = this.legalMatters().find(lm => lm.id === assignments[0]);
       return matter?.lawyerId || null;
     }
     return null;

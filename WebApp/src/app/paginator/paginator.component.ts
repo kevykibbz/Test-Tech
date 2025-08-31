@@ -1,6 +1,6 @@
 
 
-import { Component, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChanges } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChanges, signal, computed, effect, input, output } from '@angular/core';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { AsyncSubject, takeUntil } from 'rxjs';
 
@@ -11,27 +11,60 @@ import { AsyncSubject, takeUntil } from 'rxjs';
   styleUrl: './paginator.component.scss'
 })
 export class PaginatorComponent implements OnChanges, OnInit, OnDestroy {
-  @Input() disabled!: boolean;
-  @Input() pageSize!: number;
-  @Input() totalItems?: number;
+  // Modern input signals
+  disabled = input<boolean>(false);
+  pageSize = input<number>(10);
+  totalItems = input<number | undefined>(undefined);
 
-  @Output() selectedPageChange = new EventEmitter<number>();
+  // Modern output signals
+  selectedPageChange = output<number>();
 
-  canSelectNext = false;
-  canSelectPrevious = false;
-  paginatorItems: number[] = [];
+  // Signals for reactive state management
+  selectedPage = signal(1);
+  totalPages = signal<number | undefined>(undefined);
+  
+  // Computed signals for derived state
+  canSelectNext = computed(() => {
+    const current = this.selectedPage();
+    const total = this.totalPages();
+    return total ? current < total : false;
+  });
+  
+  canSelectPrevious = computed(() => {
+    return this.selectedPage() > 1;
+  });
+  
+  paginatorItems = computed(() => {
+    const total = this.totalPages();
+    if (!total) return [];
+    
+    const items: number[] = [];
+    for (let i = 1; i <= total; i++) {
+      items.push(i);
+    }
+    return items;
+  });
+
   selectedPageControl = new FormControl<number>(1);
-  totalPages?: number;
-
   private destroy$ = new AsyncSubject<any>();
 
   constructor() {
+    // Effect to update pagination when inputs change
+    effect(() => {
+      const items = this.totalItems();
+      const size = this.pageSize();
+      this.updatePagination(items, size);
+    });
+    
+    // Effect to emit page changes
+    effect(() => {
+      const page = this.selectedPage();
+      this.selectedPageChange.emit(page);
+    });
   }
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (changes['totalItems'] || changes['pageSize']) {
-      this.updatePaginator();
-    }
+    // No longer needed - effects handle input changes automatically
   }
 
   ngOnInit(): void {
@@ -39,13 +72,11 @@ export class PaginatorComponent implements OnChanges, OnInit, OnDestroy {
       .pipe(
         takeUntil(this.destroy$),
       )
-      .subscribe((page:any) => {
-        this.selectedPageChange.emit(page);
-        this.updateBackAndForwardLinkStates(page);
+      .subscribe((page: any) => {
+        this.selectedPage.set(page || 1);
       });
 
     this.selectedPageControl.setValue(1);
-    this.updatePaginator();
   }
 
   ngOnDestroy(): void {
@@ -55,7 +86,8 @@ export class PaginatorComponent implements OnChanges, OnInit, OnDestroy {
 
   selectNextPage(): void {
     const currentValue = this.selectedPageControl.value ?? 1;
-    this.selectedPageControl.setValue(Math.min(currentValue + 1, this.totalPages!));
+    const totalPages = this.totalPages();
+    this.selectedPageControl.setValue(Math.min(currentValue + 1, totalPages || 1));
   }
 
   selectPreviousPage(): void {
@@ -67,27 +99,13 @@ export class PaginatorComponent implements OnChanges, OnInit, OnDestroy {
     return index;
   }
 
-  private updatePaginator(): void {
-    console.log('Updating paginator with totalItems:', this.totalItems, 'and pageSize:', this.pageSize);
-    if (!this.totalItems) {
-      this.paginatorItems = [];
+  private updatePagination(totalItems: number | undefined, pageSize: number): void {
+    if (!totalItems || !pageSize) {
+      this.totalPages.set(undefined);
       return;
     }
-    console.log('Updating paginator with totalItems:', this.totalItems, 'and pageSize:', this.pageSize);
-
-    const selectedPage = this.selectedPageControl.value ?? 1;
-  
-    this.totalPages = Math.ceil(this.totalItems / this.pageSize);
-    this.paginatorItems = [];
-    for (let i = 1; i <= this.totalPages; i++) {
-      this.paginatorItems.push(i);
-    }
-
-    this.updateBackAndForwardLinkStates(selectedPage);
-  }
-
-  private updateBackAndForwardLinkStates(selectedPage: number): void {
-    this.canSelectNext = selectedPage < this.totalPages!;
-    this.canSelectPrevious = selectedPage > 1;
+    
+    const calculatedTotalPages = Math.ceil(totalItems / pageSize);
+    this.totalPages.set(calculatedTotalPages);
   }
 }

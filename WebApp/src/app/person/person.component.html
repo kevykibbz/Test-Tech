@@ -1,22 +1,22 @@
 
-@switch (loading) {
+@switch (loading()) {
   @case (true) {
     <div>Loading...</div>
   }
   @default {
-    @if (person) {
+    @if (person()) {
       <div>
         <div>
-          @switch (person.hasPicture) {
+          @switch (person()!.hasPicture) {
             @case (true) {
-              <img [src]="person.pictureUrl">
+              <img [src]="person()!.pictureUrl">
             }
             @default {
-              {{person.initials!}}
+              {{person()!.initials!}}
             }
           }
         </div>
-        <div>{{person.fullName}}</div>
+        <div>{{person()!.fullName}}</div>
       </div>
     } @else {
       <ng-content></ng-content>

@@ -2,13 +2,13 @@
   class="button"
   type="button"
   title="Go to previous page"
-  [disabled]="disabled || !canSelectPrevious"
+  [disabled]="disabled() || !canSelectPrevious()"
   (click)="selectPreviousPage()"
 >
   &lt;
 </button>
 <select [formControl]="selectedPageControl">
-  @for (p of paginatorItems; track trackByIndex($index)) {
+  @for (p of paginatorItems(); track trackByIndex($index)) {
   <option [ngValue]="p">{{ p }}</option>
   }
 </select>
@@ -16,7 +16,7 @@
   class="button"
   type="button"
   title="Go to next page"
-  [disabled]="disabled || !canSelectNext"
+  [disabled]="disabled() || !canSelectNext()"
   (click)="selectNextPage()"
 >
   &gt;

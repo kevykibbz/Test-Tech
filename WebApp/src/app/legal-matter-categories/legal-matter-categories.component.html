@@ -5,9 +5,11 @@
     Loading...
   </div>
   
-  <div class="error" *ngIf="error">
-    {{ error }}
-  </div>
+  @if (error()) {
+    <div class="error">
+      {{ error() }}
+    </div>
+  }
   
   <div class="actions">
     <button (click)="onRefresh()" class="btn btn-secondary">Refresh</button>
@@ -18,30 +20,32 @@
     <div class="categories-panel">
       <h3>Categories</h3>
       <div class="categories-list">
-        <div 
-          *ngFor="let category of categories$ | async; trackBy: trackByCategoryId"
-          class="category-item"
-          [class.selected]="selectedCategory?.id === category.id"
-          (click)="onCategorySelect(category)">
-          <div class="category-name">{{ category.name }}</div>
-          <div class="category-id">ID: {{ category.id }}</div>
-        </div>
+        @for (category of categories(); track category.id) {
+          <div class="category-item"
+               [class.selected]="selectedCategory()?.id === category.id"
+               (click)="onCategorySelect(category)">
+            <div class="category-name">{{ category.name }}</div>
+            <div class="category-id">ID: {{ category.id }}</div>
+          </div>
+        }
       </div>
     </div>
     
     <!-- Details Panel -->
     <div class="details-panel">
       <h3>Category Details</h3>
-      <div *ngIf="selectedCategory" class="category-details">
-        <div class="detail-item">
-          <label>ID:</label>
-          <span>{{ selectedCategory.id }}</span>
+      @if (selectedCategory()) {
+        <div class="category-details">
+          <div class="detail-item">
+            <label>ID:</label>
+            <span>{{ selectedCategory()!.id }}</span>
+          </div>
+          <div class="detail-item">
+            <label>Name:</label>
+            <span>{{ selectedCategory()!.name }}</span>
+          </div>
         </div>
-        <div class="detail-item">
-          <label>Name:</label>
-          <span>{{ selectedCategory.name }}</span>
-        </div>
-      </div>
+      }
       
       <div *ngIf="!selectedCategory" class="no-details">
         Select a category to view details

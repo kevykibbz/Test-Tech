@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output, signal, computed, input, output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Lawyer } from '../lawyer';
@@ -13,49 +13,54 @@ import { LegalMatterService } from '../legal-matter.service';
     <div class="modal-overlay" (click)="closeModal()">
       <div class="modal-content" (click)="$event.stopPropagation()">
         <div class="modal-header">
-          <h2>{{ isMultipleSelection ? 'Assign Lawyer to Legal Matters' : 'Assign Lawyer to Legal Matter' }}</h2>
+          <h2>{{ isMultipleSelection() ? 'Assign Lawyer to Legal Matters' : 'Assign Lawyer to Legal Matter' }}</h2>
           <button class="close-btn" (click)="closeModal()">&times;</button>
         </div>
         
         <div class="modal-body">
-          <div class="selected-matters" *ngIf="isMultipleSelection">
-            <h3>Selected Legal Matters ({{ selectedLegalMatterIds.length }})</h3>
-            <div class="matter-list">
-              <div *ngFor="let matterId of selectedLegalMatterIds" class="matter-item">
-                Matter ID: {{ matterId }}
+          @if (isMultipleSelection()) {
+            <div class="selected-matters">
+              <h3>Selected Legal Matters ({{ selectedLegalMatterIds().length }})</h3>
+              <div class="matter-list">
+                @for (matterId of selectedLegalMatterIds(); track matterId) {
+                  <div class="matter-item">
+                    Matter ID: {{ matterId }}
+                  </div>
+                }
               </div>
             </div>
-          </div>
+          }
 
           <div class="lawyer-selection">
             <h3>Select Lawyer</h3>
             <div class="search-box">
               <input 
                 type="text" 
-                [(ngModel)]="searchTerm" 
-                (input)="filterLawyers()"
+                [ngModel]="searchTerm()" 
+                (ngModelChange)="searchTerm.set($event)"
                 placeholder="Search lawyers..."
                 class="form-control">
             </div>
             
             <div class="lawyers-list">
-              <div 
-                *ngFor="let lawyer of filteredLawyers" 
-                class="lawyer-item"
-                [class.selected]="selectedLawyerId === lawyer.id"
-                (click)="selectLawyer(lawyer)">
-                <div class="lawyer-info">
-                  <div class="lawyer-name">{{ lawyer.fullName }}</div>
-                  <div class="lawyer-company">{{ lawyer.companyName }}</div>
+              @for (lawyer of filteredLawyers(); track lawyer.id) {
+                <div class="lawyer-item"
+                     [class.selected]="selectedLawyerId() === lawyer.id"
+                     (click)="selectLawyer(lawyer)">
+                  <div class="lawyer-info">
+                    <div class="lawyer-name">{{ lawyer.fullName }}</div>
+                    <div class="lawyer-company">{{ lawyer.companyName }}</div>
+                  </div>
+                  <div class="lawyer-actions">
+                    <input 
+                      type="radio" 
+                      [value]="lawyer.id" 
+                      [ngModel]="selectedLawyerId()" 
+                      (ngModelChange)="selectedLawyerId.set($event)"
+                      name="selectedLawyer">
+                  </div>
                 </div>
-                <div class="lawyer-actions">
-                  <input 
-                    type="radio" 
-                    [value]="lawyer.id" 
-                    [(ngModel)]="selectedLawyerId"
-                    name="selectedLawyer">
-                </div>
-              </div>
+              }
             </div>
           </div>
         </div>
@@ -68,16 +73,17 @@ import { LegalMatterService } from '../legal-matter.service';
           </button>
           <button 
             class="btn btn-primary" 
-            [disabled]="!selectedLawyerId"
+            [disabled]="!selectedLawyerId()"
             (click)="assignLawyer()">
-            {{ isMultipleSelection ? 'Assign to All' : 'Assign Lawyer' }}
+            {{ isMultipleSelection() ? 'Assign to All' : 'Assign Lawyer' }}
           </button>
-          <button 
-            class="btn btn-warning" 
-            *ngIf="!isMultipleSelection && currentLawyerId"
-            (click)="unassignLawyer()">
-            Unassign Current Lawyer
-          </button>
+          @if (!isMultipleSelection() && currentLawyerId()) {
+            <button 
+              class="btn btn-warning" 
+              (click)="unassignLawyer()">
+              Unassign Current Lawyer
+            </button>
+          }
         </div>
       </div>
     </div>
@@ -271,19 +277,37 @@ import { LegalMatterService } from '../legal-matter.service';
   `]
 })
 export class LawyerAssignmentModalComponent implements OnInit {
-  @Input() selectedLegalMatterIds: string[] = [];
-  @Input() currentLawyerId: string | null = null;
-  @Output() assignmentComplete = new EventEmitter<{lawyerId: string, action: 'assign' | 'unassign'}>();
-  @Output() modalClosed = new EventEmitter<void>();
+  // Using modern input signals (Angular 20 feature)
+  selectedLegalMatterIds = input<string[]>([]);
+  currentLawyerId = input<string | null>(null);
+  
+  // Using modern output signals (Angular 20 feature)
+  assignmentComplete = output<{lawyerId: string, action: 'assign' | 'unassign'}>();
+  modalClosed = output<void>();
 
-  lawyers: Lawyer[] = [];
-  filteredLawyers: Lawyer[] = [];
-  selectedLawyerId: string | null = null;
-  searchTerm: string = '';
+  // Signals for reactive state management
+  lawyers = signal<Lawyer[]>([]);
+  selectedLawyerId = signal<string | null>(null);
+  searchTerm = signal('');
 
-  get isMultipleSelection(): boolean {
-    return this.selectedLegalMatterIds.length > 1;
-  }
+  // Computed signals for derived state
+  filteredLawyers = computed(() => {
+    const lawyers = this.lawyers();
+    const term = this.searchTerm().toLowerCase();
+    
+    if (!term.trim()) {
+      return lawyers;
+    }
+    
+    return lawyers.filter(lawyer => 
+      lawyer.fullName.toLowerCase().includes(term) ||
+      lawyer.companyName.toLowerCase().includes(term)
+    );
+  });
+
+  isMultipleSelection = computed(() => {
+    return this.selectedLegalMatterIds().length > 1;
+  });
 
   constructor(
     private lawyerService: LawyerService,
@@ -292,14 +316,13 @@ export class LawyerAssignmentModalComponent implements OnInit {
 
   ngOnInit() {
     this.loadLawyers();
-    this.selectedLawyerId = this.currentLawyerId;
+    this.selectedLawyerId.set(this.currentLawyerId());
   }
 
   loadLawyers() {
     this.lawyerService.getLawyers(0, 1000).subscribe({
       next: (lawyers) => {
-        this.lawyers = lawyers;
-        this.filteredLawyers = lawyers;
+        this.lawyers.set(lawyers);
       },
       error: (error) => {
         console.error('Error loading lawyers:', error);
@@ -308,35 +331,29 @@ export class LawyerAssignmentModalComponent implements OnInit {
   }
 
   filterLawyers() {
-    if (!this.searchTerm.trim()) {
-      this.filteredLawyers = this.lawyers;
-      return;
-    }
-
-    const term = this.searchTerm.toLowerCase();
-    this.filteredLawyers = this.lawyers.filter(lawyer => 
-      lawyer.fullName.toLowerCase().includes(term) ||
-      lawyer.companyName.toLowerCase().includes(term)
-    );
+    // This method is no longer needed since we use computed signals
+    // The filtering is now handled automatically by the filteredLawyers computed signal
   }
 
   selectLawyer(lawyer: Lawyer) {
-    this.selectedLawyerId = lawyer.id;
+    this.selectedLawyerId.set(lawyer.id);
   }
 
   assignLawyer() {
-    if (!this.selectedLawyerId) return;
+    const selectedId = this.selectedLawyerId();
+    if (!selectedId) return;
 
-    if (this.isMultipleSelection) {
+    if (this.isMultipleSelection()) {
       // Assign lawyer to multiple legal matters
-      const assignments = this.selectedLegalMatterIds.map(matterId =>
-        this.legalMatterService.assignLawyerToLegalMatter(matterId, this.selectedLawyerId!)
+      const selectedMatterIds = this.selectedLegalMatterIds();
+      const assignments = selectedMatterIds.map(matterId =>
+        this.legalMatterService.assignLawyerToLegalMatter(matterId, selectedId)
       );
 
       // Wait for all assignments to complete
       Promise.all(assignments.map(obs => obs.toPromise())).then(() => {
         this.assignmentComplete.emit({
-          lawyerId: this.selectedLawyerId!,
+          lawyerId: selectedId,
           action: 'assign'
         });
         this.closeModal();
@@ -346,13 +363,14 @@ export class LawyerAssignmentModalComponent implements OnInit {
       });
     } else {
       // Assign lawyer to single legal matter
+      const selectedMatterIds = this.selectedLegalMatterIds();
       this.legalMatterService.assignLawyerToLegalMatter(
-        this.selectedLegalMatterIds[0], 
-        this.selectedLawyerId
+        selectedMatterIds[0], 
+        selectedId
       ).subscribe({
         next: () => {
           this.assignmentComplete.emit({
-            lawyerId: this.selectedLawyerId!,
+            lawyerId: selectedId,
             action: 'assign'
           });
           this.closeModal();
@@ -366,9 +384,10 @@ export class LawyerAssignmentModalComponent implements OnInit {
   }
 
   unassignLawyer() {
-    if (this.selectedLegalMatterIds.length !== 1) return;
+    const selectedMatterIds = this.selectedLegalMatterIds();
+    if (selectedMatterIds.length !== 1) return;
 
-    this.legalMatterService.unassignLawyerFromLegalMatter(this.selectedLegalMatterIds[0]).subscribe({
+    this.legalMatterService.unassignLawyerFromLegalMatter(selectedMatterIds[0]).subscribe({
       next: () => {
         this.assignmentComplete.emit({
           lawyerId: '',

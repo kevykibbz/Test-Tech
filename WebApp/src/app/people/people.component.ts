@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Observable } from 'rxjs';
 import { Person } from '../person';
@@ -12,10 +12,15 @@ import { PeopleService } from '../people.service';
   styleUrls: ['./people.component.scss']
 })
 export class PeopleComponent implements OnInit {
-  people$!: Observable<Person[]>;
-  selectedPerson: Person | null = null;
-  loading = false;
-  error: string | null = null;
+  // State signals
+  people = signal<Person[]>([]);
+  selectedPerson = signal<Person | null>(null);
+  loading = signal(false);
+  error = signal<string | null>(null);
+
+  // Computed signals
+  hasPeople = computed(() => this.people().length > 0);
+  hasSelection = computed(() => !!this.selectedPerson());
 
   constructor(private peopleService: PeopleService) {}
 
@@ -24,17 +29,27 @@ export class PeopleComponent implements OnInit {
   }
 
   loadPeople(): void {
-    this.loading = true;
-    this.error = null;
-    this.people$ = this.peopleService.getPeople();
+    this.loading.set(true);
+    this.error.set(null);
+    
+    this.peopleService.getPeople().subscribe({
+      next: (people) => {
+        this.people.set(people);
+        this.loading.set(false);
+      },
+      error: (err) => {
+        this.error.set('Failed to load people');
+        this.loading.set(false);
+      }
+    });
   }
 
   onPersonSelect(person: Person): void {
-    this.selectedPerson = person;
+    this.selectedPerson.set(person);
   }
 
   onRefresh(): void {
-    this.selectedPerson = null;
+    this.selectedPerson.set(null);
     this.loadPeople();
   }
 

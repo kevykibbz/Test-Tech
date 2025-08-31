@@ -1,7 +1,7 @@
 <button class="button button--primary" type="button" (click)="createLegalMatter()">Create Legal Matter</button>
 
 <!-- Create Legal Matter Form -->
-@if (showCreateForm) {
+@if (showCreateForm()) {
   <div style="background: #f5f5f5; padding: 20px; margin: 20px 0; border-radius: 8px;">
     <h3>Create New Legal Matter</h3>
     <form (ngSubmit)="submitLegalMatter()" #createForm="ngForm">
@@ -75,14 +75,14 @@
       <div style="display: flex; gap: 10px;">
         <button 
           type="submit" 
-          [disabled]="creating || !createForm.form.valid"
+          [disabled]="creating() || !createForm.form.valid"
           class="button button--primary">
-          {{ creating ? 'Creating...' : 'Create Legal Matter' }}
+          {{ creating() ? 'Creating...' : 'Create Legal Matter' }}
         </button>
         <button 
           type="button" 
           (click)="cancelCreate()"
-          [disabled]="creating"
+          [disabled]="creating()"
           class="button button--secondary">
           Cancel
         </button>
@@ -91,7 +91,7 @@
   </div>
 }
 
-@if (loading) {
+@if (loading()) {
   <div style="text-align: center; padding: 20px;">
     Loading legal matters...
   </div>
@@ -104,10 +104,10 @@
           type="button"
           (click)="toggleMultiSelectMode()"
           class="button button--secondary button--small">
-          {{ isMultiSelectMode ? 'Exit Multi-Select' : 'Multi-Select Mode' }}
+          {{ isMultiSelectMode() ? 'Exit Multi-Select' : 'Multi-Select Mode' }}
         </button>
         
-        @if (isMultiSelectMode) {
+        @if (isMultiSelectMode()) {
           <button 
             type="button"
             (click)="selectAllLegalMatters()"
@@ -128,7 +128,7 @@
       <div>
         @if (hasSelectedItems) {
           <span style="margin-right: 15px; font-weight: bold;">
-            {{ selectedCount }} item(s) selected
+            {{ selectedCount() }} item(s) selected
           </span>
           <button 
             type="button"
@@ -145,12 +145,12 @@
     <table>
       <thead>
         <tr>
-          @if (isMultiSelectMode) {
+          @if (isMultiSelectMode()) {
             <th style="width: 40px;">
               <input 
                 type="checkbox" 
-                [checked]="selectedCount === legalMatters.length && legalMatters.length > 0"
-                (change)="selectedCount === legalMatters.length ? clearSelection() : selectAllLegalMatters()">
+                [checked]="selectedCount() === legalMatters().length && legalMatters().length > 0"
+                (change)="selectedCount() === legalMatters().length ? clearSelection() : selectAllLegalMatters()">
             </th>
           }
           <th>Matter Name</th>
@@ -163,13 +163,13 @@
         </tr>
       </thead>
     <tbody>
-      @for (legalMatter of legalMatters; track legalMatter.id) {
-        <tr [class.selected-row]="selectedLegalMattersData[legalMatter.id!]">
-          @if (isMultiSelectMode) {
+      @for (legalMatter of legalMatters(); track legalMatter.id) {
+        <tr [class.selected-row]="selectedLegalMattersData()[legalMatter.id!]">
+          @if (isMultiSelectMode()) {
             <td>
               <input 
                 type="checkbox"
-                [checked]="selectedLegalMattersData[legalMatter.id!]"
+                [checked]="selectedLegalMattersData()[legalMatter.id!]"
                 (change)="toggleLegalMatterSelection(legalMatter.id!)">
             </td>
           }
@@ -219,9 +219,9 @@
           </td>
         </tr>
       }
-      @if (legalMatters.length === 0) {
+      @if (legalMatters().length === 0) {
         <tr>
-          <td [attr.colspan]="isMultiSelectMode ? 8 : 7" style="text-align: center; padding: 20px;">
+          <td [attr.colspan]="isMultiSelectMode() ? 8 : 7" style="text-align: center; padding: 20px;">
             No legal matters found.
           </td>
         </tr>
@@ -230,12 +230,12 @@
   </table>
   </div>
 
-  <app-paginator [disabled]="loading" [hidden]="!legalMatterCount" [pageSize]="legalMattersPerPage"
-  [totalItems]="legalMatterCount" (selectedPageChange)="onPageChange($event)"></app-paginator>
+  <app-paginator [disabled]="loading()" [hidden]="!legalMatterCount()" [pageSize]="legalMattersPerPage()"
+  [totalItems]="legalMatterCount()!" (selectedPageChange)="onPageChange($event)"></app-paginator>
 }
 
 <!-- Edit Legal Matter Form -->
-@if (showEditForm && editingLegalMatter) {
+@if (showEditForm() && editingLegalMatter()) {
   <div class="modal-overlay" (click)="cancelEdit()">
     <div class="modal-content" (click)="$event.stopPropagation()">
       <h3>Edit Legal Matter</h3>
@@ -246,9 +246,9 @@
             id="edit-matterName"
             name="matterName"
             type="text"
-            [(ngModel)]="editingLegalMatter.matterName"
+            [(ngModel)]="editingLegalMatter()!.matterName"
             required
-            [disabled]="creating"
+            [disabled]="creating()"
             placeholder="Enter matter name"
           />
         </div>
@@ -259,8 +259,8 @@
             id="edit-contractType"
             name="contractType"
             type="text"
-            [(ngModel)]="editingLegalMatter.contractType"
-            [disabled]="creating"
+            [(ngModel)]="editingLegalMatter()!.contractType"
+            [disabled]="creating()"
             placeholder="Enter contract type"
           />
         </div>
@@ -270,8 +270,8 @@
           <select
             id="edit-status"
             name="status"
-            [(ngModel)]="editingLegalMatter.status"
-            [disabled]="creating"
+            [(ngModel)]="editingLegalMatter()!.status"
+            [disabled]="creating()"
           >
             <option value="">Select status</option>
             <option value="Active">Active</option>
@@ -288,8 +288,8 @@
             id="edit-contractValue"
             name="contractValue"
             type="number"
-            [(ngModel)]="editingLegalMatter.contractValue"
-            [disabled]="creating"
+            [(ngModel)]="editingLegalMatter()!.contractValue"
+            [disabled]="creating()"
             placeholder="Enter contract value"
             step="0.01"
           />
@@ -301,8 +301,8 @@
             id="edit-governingLaw"
             name="governingLaw"
             type="text"
-            [(ngModel)]="editingLegalMatter.governingLaw"
-            [disabled]="creating"
+            [(ngModel)]="editingLegalMatter()!.governingLaw"
+            [disabled]="creating()"
             placeholder="Enter governing law"
           />
         </div>
@@ -312,8 +312,8 @@
           <textarea
             id="edit-description"
             name="description"
-            [(ngModel)]="editingLegalMatter.description"
-            [disabled]="creating"
+            [(ngModel)]="editingLegalMatter()!.description"
+            [disabled]="creating()"
             placeholder="Enter description"
             rows="4"
           ></textarea>
@@ -325,8 +325,8 @@
             id="edit-effectiveDate"
             name="effectiveDate"
             type="date"
-            [(ngModel)]="editingLegalMatter.effectiveDate"
-            [disabled]="creating"
+            [(ngModel)]="editingLegalMatter()!.effectiveDate"
+            [disabled]="creating()"
           />
         </div>
 
@@ -336,22 +336,22 @@
             id="edit-expirationDate"
             name="expirationDate"
             type="date"
-            [(ngModel)]="editingLegalMatter.expirationDate"
-            [disabled]="creating"
+            [(ngModel)]="editingLegalMatter()!.expirationDate"
+            [disabled]="creating()"
           />
         </div>
 
         <div class="form-actions">
           <button 
             type="submit" 
-            [disabled]="creating || !editingLegalMatter.matterName?.trim()"
+            [disabled]="creating() || !editingLegalMatter()!.matterName?.trim()"
             class="button button--primary">
-            {{ creating ? 'Updating...' : 'Update Legal Matter' }}
+            {{ creating() ? 'Updating...' : 'Update Legal Matter' }}
           </button>
           <button 
             type="button" 
             (click)="cancelEdit()"
-            [disabled]="creating"
+            [disabled]="creating()"
             class="button button--secondary">
             Cancel
           </button>
@@ -362,54 +362,54 @@
 }
 
 <!-- Legal Matter Details Modal -->
-@if (showDetailsModal && selectedLegalMatter) {
+@if (showDetailsModal() && selectedLegalMatter()) {
   <div class="modal-overlay" (click)="closeDetailsModal()">
     <div class="modal-content" (click)="$event.stopPropagation()">
       <h3>Legal Matter Details</h3>
       <div class="details-content">
         <div class="detail-row">
           <strong>Matter Name:</strong>
-          <span>{{ selectedLegalMatter.matterName }}</span>
+          <span>{{ selectedLegalMatter()!.matterName }}</span>
         </div>
         <div class="detail-row">
           <strong>Contract Type:</strong>
-          <span>{{ selectedLegalMatter.contractType || 'N/A' }}</span>
+          <span>{{ selectedLegalMatter()!.contractType || 'N/A' }}</span>
         </div>
         <div class="detail-row">
           <strong>Status:</strong>
-          <span>{{ selectedLegalMatter.status || 'N/A' }}</span>
+          <span>{{ selectedLegalMatter()!.status || 'N/A' }}</span>
         </div>
         <div class="detail-row">
           <strong>Contract Value:</strong>
-          <span>{{ selectedLegalMatter.contractValue ? ('$' + (selectedLegalMatter.contractValue | number:'1.2-2')) : 'N/A' }}</span>
+          <span>{{ selectedLegalMatter()!.contractValue ? ('$' + (selectedLegalMatter()!.contractValue | number:'1.2-2')) : 'N/A' }}</span>
         </div>
         <div class="detail-row">
           <strong>Governing Law:</strong>
-          <span>{{ selectedLegalMatter.governingLaw || 'N/A' }}</span>
+          <span>{{ selectedLegalMatter()!.governingLaw || 'N/A' }}</span>
         </div>
         <div class="detail-row">
           <strong>Description:</strong>
-          <span>{{ selectedLegalMatter.description || 'N/A' }}</span>
+          <span>{{ selectedLegalMatter()!.description || 'N/A' }}</span>
         </div>
         <div class="detail-row">
           <strong>Effective Date:</strong>
-          <span>{{ selectedLegalMatter.effectiveDate ? (selectedLegalMatter.effectiveDate | date:'dd MMM yyyy') : 'N/A' }}</span>
+          <span>{{ selectedLegalMatter()!.effectiveDate ? (selectedLegalMatter()!.effectiveDate | date:'dd MMM yyyy') : 'N/A' }}</span>
         </div>
         <div class="detail-row">
           <strong>Expiration Date:</strong>
-          <span>{{ selectedLegalMatter.expirationDate ? (selectedLegalMatter.expirationDate | date:'dd MMM yyyy') : 'N/A' }}</span>
+          <span>{{ selectedLegalMatter()!.expirationDate ? (selectedLegalMatter()!.expirationDate | date:'dd MMM yyyy') : 'N/A' }}</span>
         </div>
         <div class="detail-row">
           <strong>Created At:</strong>
-          <span>{{ selectedLegalMatter.createdAt | date:'dd MMM yyyy HH:mm' }}</span>
+          <span>{{ selectedLegalMatter()!.createdAt | date:'dd MMM yyyy HH:mm' }}</span>
         </div>
         <div class="detail-row">
           <strong>Last Modified:</strong>
-          <span>{{ selectedLegalMatter.lastModified ? (selectedLegalMatter.lastModified | date:'dd MMM yyyy HH:mm') : 'Never' }}</span>
+          <span>{{ selectedLegalMatter()!.lastModified ? (selectedLegalMatter()!.lastModified | date:'dd MMM yyyy HH:mm') : 'Never' }}</span>
         </div>
         <div class="detail-row">
           <strong>Lawyer ID:</strong>
-          <span>{{ selectedLegalMatter.lawyerId || 'Not assigned' }}</span>
+          <span>{{ selectedLegalMatter()!.lawyerId || 'Not assigned' }}</span>
         </div>
       </div>
       <div class="form-actions">
@@ -421,7 +421,7 @@
         </button>
         <button 
           type="button" 
-          (click)="editLegalMatter(selectedLegalMatter); closeDetailsModal()"
+          (click)="editLegalMatter(selectedLegalMatter()!); closeDetailsModal()"
           class="button button--primary">
           Edit
         </button>
@@ -431,9 +431,9 @@
 }
 
 <!-- Lawyer Assignment Modal -->
-@if (showLawyerAssignmentModal) {
+@if (showLawyerAssignmentModal()) {
   <app-lawyer-assignment-modal
-    [selectedLegalMatterIds]="selectedLegalMattersForAssignment"
+    [selectedLegalMatterIds]="selectedLegalMattersForAssignment()"
     [currentLawyerId]="currentLawyerIdForAssignment"
     (assignmentComplete)="onLawyerAssignmentComplete($event)"
     (modalClosed)="closeLawyerAssignmentModal()">

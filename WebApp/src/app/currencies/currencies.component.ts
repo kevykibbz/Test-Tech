@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Observable } from 'rxjs';
 import { Currency } from '../currency';
@@ -12,10 +12,15 @@ import { CurrencyService } from '../currency.service';
   styleUrls: ['./currencies.component.scss']
 })
 export class CurrenciesComponent implements OnInit {
-  currencies$!: Observable<Currency[]>;
-  selectedCurrency: Currency | null = null;
-  loading = false;
-  error: string | null = null;
+  // State signals
+  currencies = signal<Currency[]>([]);
+  selectedCurrency = signal<Currency | null>(null);
+  loading = signal(false);
+  error = signal<string | null>(null);
+
+  // Computed signals
+  hasCurrencies = computed(() => this.currencies().length > 0);
+  hasSelection = computed(() => !!this.selectedCurrency());
 
   constructor(private currencyService: CurrencyService) {}
 
@@ -24,17 +29,27 @@ export class CurrenciesComponent implements OnInit {
   }
 
   loadCurrencies(): void {
-    this.loading = true;
-    this.error = null;
-    this.currencies$ = this.currencyService.getCurrencies();
+    this.loading.set(true);
+    this.error.set(null);
+    
+    this.currencyService.getCurrencies().subscribe({
+      next: (currencies) => {
+        this.currencies.set(currencies);
+        this.loading.set(false);
+      },
+      error: (err) => {
+        this.error.set('Failed to load currencies');
+        this.loading.set(false);
+      }
+    });
   }
 
   onCurrencySelect(currency: Currency): void {
-    this.selectedCurrency = currency;
+    this.selectedCurrency.set(currency);
   }
 
   onRefresh(): void {
-    this.selectedCurrency = null;
+    this.selectedCurrency.set(null);
     this.loadCurrencies();
   }
 

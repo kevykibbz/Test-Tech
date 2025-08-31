@@ -2,12 +2,13 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { LegalMatterDetailed, LegalMatterCreateUpdate } from './legal-matter-detailed';
+import { environment } from '../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class LegalMatterService {
-  private readonly baseUrl = 'https://localhost:5001/legalmatter';
+  private readonly baseUrl = `${environment.apiServerBase}/LegalMatter`;
 
   constructor(private http: HttpClient) {}
 

@@ -10,42 +10,45 @@
     <div class="currencies-list">
       <h3>Available Currencies</h3>
       <div class="currency-grid">
-        <div *ngFor="let currency of currencies$ | async; trackBy: trackById" 
-             class="currency-card"
-             [class.selected]="selectedCurrency?.id === currency.id"
-             (click)="onCurrencySelect(currency)">
-          <div class="currency-header">
-            <span class="currency-symbol">{{ currency.symbol }}</span>
-            <span class="currency-id">{{ currency.id }}</span>
+        @for (currency of currencies(); track currency.id) {
+          <div class="currency-card"
+               [class.selected]="selectedCurrency()?.id === currency.id"
+               (click)="onCurrencySelect(currency)">
+            <div class="currency-header">
+              <span class="currency-symbol">{{ currency.symbol }}</span>
+              <span class="currency-id">{{ currency.id }}</span>
+            </div>
+            <div class="currency-details">
+              <h4>{{ currency.name }}</h4>
+              <p>Decimal Digits: {{ currency.decimal_digits }}</p>
+            </div>
           </div>
-          <div class="currency-details">
-            <h4>{{ currency.name }}</h4>
-            <p>Decimal Digits: {{ currency.decimal_digits }}</p>
-          </div>
-        </div>
+        }
       </div>
     </div>
 
-    <div class="currency-details-panel" *ngIf="selectedCurrency">
-      <h3>Currency Details</h3>
-      <div class="detail-card">
-        <div class="detail-group">
-          <label>Currency ID:</label>
-          <span>{{ selectedCurrency.id }}</span>
-        </div>
-        <div class="detail-group">
-          <label>Name:</label>
-          <span>{{ selectedCurrency.name }}</span>
-        </div>
-        <div class="detail-group">
-          <label>Symbol:</label>
-          <span class="currency-symbol-large">{{ selectedCurrency.symbol }}</span>
-        </div>
-        <div class="detail-group">
-          <label>Decimal Digits:</label>
-          <span>{{ selectedCurrency.decimal_digits }}</span>
+    @if (selectedCurrency()) {
+      <div class="currency-details-panel">
+        <h3>Currency Details</h3>
+        <div class="detail-card">
+          <div class="detail-group">
+            <label>Currency ID:</label>
+            <span>{{ selectedCurrency()!.id }}</span>
+          </div>
+          <div class="detail-group">
+            <label>Name:</label>
+            <span>{{ selectedCurrency()!.name }}</span>
+          </div>
+          <div class="detail-group">
+            <label>Symbol:</label>
+            <span class="currency-symbol-large">{{ selectedCurrency()!.symbol }}</span>
+          </div>
+          <div class="detail-group">
+            <label>Decimal Digits:</label>
+            <span>{{ selectedCurrency()!.decimal_digits }}</span>
+          </div>
         </div>
       </div>
-    </div>
+    }
   </div>
 </div>

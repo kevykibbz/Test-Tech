@@ -1,4 +1,4 @@
-import { Component, Input, OnDestroy, OnInit } from '@angular/core';
+import { Component, input, OnDestroy, OnInit, signal, effect } from '@angular/core';
 import { AsyncSubject, finalize, takeUntil } from 'rxjs';
 import { PeopleService } from '../people.service';
 import { Person } from '../person';
@@ -10,14 +10,23 @@ import { Person } from '../person';
   styleUrl: './person.component.scss'
 })
 export class PersonComponent implements OnInit, OnDestroy {
-  @Input() personId!: string;
+  // Input signals
+  personId = input.required<string>();
 
-  loading = false;
-  person?: Person;
+  // State signals
+  loading = signal(false);
+  person = signal<Person | undefined>(undefined);
 
   private destroy$ = new AsyncSubject<any>();
 
   constructor(private peopleService: PeopleService) {
+    // Effect to reload data when personId changes
+    effect(() => {
+      const id = this.personId();
+      if (id) {
+        this.loadPersonData();
+      }
+    });
   }
 
   ngOnInit(): void {
@@ -30,12 +39,12 @@ export class PersonComponent implements OnInit, OnDestroy {
   }
 
   private loadPersonData(): void {
-    this.loading = true;
-    this.peopleService.getPerson(this.personId)
+    this.loading.set(true);
+    this.peopleService.getPerson(this.personId())
       .pipe(
-        finalize(() => this.loading = false),
+        finalize(() => this.loading.set(false)),
         takeUntil(this.destroy$),
       )
-      .subscribe(person => this.person = person);
+      .subscribe(person => this.person.set(person));
   }
 }

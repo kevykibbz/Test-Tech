@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ContractExtractionService } from '../contract-extraction.service';
@@ -12,55 +12,62 @@ import { ContractExtractionResult } from '../contract-extraction-result';
   styleUrls: ['./contract-extraction.component.scss']
 })
 export class ContractExtractionComponent {
-  activeTab: 'default' | 'text' | 'file' = 'default';
-  contractText = '';
-  selectedFile: File | null = null;
-  result: ContractExtractionResult | null = null;
-  loading = false;
-  error: string | null = null;
+  // Signals for reactive state management
+  activeTab = signal<'default' | 'text' | 'file'>('default');
+  contractText = signal('');
+  selectedFile = signal<File | null>(null);
+  result = signal<ContractExtractionResult | null>(null);
+  loading = signal(false);
+  error = signal<string | null>(null);
+
+  // Computed signals for derived state
+  hasResults = computed(() => this.result() !== null);
+  hasError = computed(() => this.error() !== null);
+  isValidText = computed(() => this.contractText().trim().length > 0);
+  isValidFile = computed(() => this.selectedFile() !== null);
 
   constructor(private contractExtractionService: ContractExtractionService) {}
 
   onTabChange(tab: 'default' | 'text' | 'file'): void {
-    this.activeTab = tab;
+    this.activeTab.set(tab);
     this.clearResults();
   }
 
   onExtractDefault(): void {
-    this.loading = true;
-    this.error = null;
-    this.result = null;
+    this.loading.set(true);
+    this.error.set(null);
+    this.result.set(null);
 
     this.contractExtractionService.extractFromDefaultContract().subscribe({
       next: (result) => {
-        this.result = result;
-        this.loading = false;
+        this.result.set(result);
+        this.loading.set(false);
       },
       error: (error) => {
-        this.error = 'Failed to extract from default contract: ' + (error.error?.message || error.message);
-        this.loading = false;
+        this.error.set('Failed to extract from default contract: ' + (error.error?.message || error.message));
+        this.loading.set(false);
       }
     });
   }
 
   onExtractFromText(): void {
-    if (!this.contractText.trim()) {
-      this.error = 'Please enter contract text';
+    if (!this.isValidText()) {
+      this.error.set('Please enter contract text');
       return;
     }
 
-    this.loading = true;
-    this.error = null;
-    this.result = null;
+    this.loading.set(true);
+    this.error.set(null);
+    this.result.set(null);
 
-    this.contractExtractionService.extractFromText(this.contractText).subscribe({
+    this.contractExtractionService.extractFromText(this.contractText()).subscribe({
       next: (result) => {
-        this.result = result;
-        this.loading = false;
+        this.result.set(result);
+        this.loading.set(false);
       },
       error: (error) => {
-        this.error = 'Failed to extract from text: ' + (error.error?.message || error.message);
-        this.loading = false;
+        this.error.set('Failed to extract from text: ' + (error.error?.message || error.message));
+        this.loading.set(false);
       }
     });
   }
@@ -68,38 +75,39 @@ export class ContractExtractionComponent {
   onFileSelected(event: any): void {
     const file = event.target.files[0];
     if (file) {
-      this.selectedFile = file;
-      this.error = null;
+      this.selectedFile.set(file);
+      this.error.set(null);
     }
   }
 
   onExtractFromFile(): void {
-    if (!this.selectedFile) {
-      this.error = 'Please select a file';
+    const file = this.selectedFile();
+    if (!file) {
+      this.error.set('Please select a file');
       return;
     }
 
-    this.loading = true;
-    this.error = null;
-    this.result = null;
+    this.loading.set(true);
+    this.error.set(null);
+    this.result.set(null);
 
-    this.contractExtractionService.extractFromFile(this.selectedFile).subscribe({
+    this.contractExtractionService.extractFromFile(file).subscribe({
       next: (result) => {
-        this.result = result;
-        this.loading = false;
+        this.result.set(result);
+        this.loading.set(false);
       },
       error: (error) => {
-        this.error = 'Failed to extract from file: ' + (error.error?.message || error.message);
-        this.loading = false;
+        this.error.set('Failed to extract from file: ' + (error.error?.message || error.message));
+        this.loading.set(false);
       }
     });
   }
 
   private clearResults(): void {
-    this.result = null;
-    this.error = null;
-    this.contractText = '';
-    this.selectedFile = null;
+    this.result.set(null);
+    this.error.set(null);
+    this.contractText.set('');
+    this.selectedFile.set(null);
   }
 
   formatDate(dateString: string | null): string {

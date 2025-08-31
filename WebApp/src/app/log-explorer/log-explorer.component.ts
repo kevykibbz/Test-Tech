@@ -1,4 +1,4 @@
-import { Component, Input, OnChanges, OnDestroy, OnInit, SimpleChanges } from '@angular/core';
+import { Component, input, OnChanges, OnDestroy, OnInit, SimpleChanges, signal, computed, effect } from '@angular/core';
 import { AsyncSubject, Subscription, finalize, takeUntil, map, distinctUntilChanged, filter } from 'rxjs';
 import { SocketState } from '../socket-state';
 import { SocketService } from '../socket.service';
@@ -13,11 +13,17 @@ import { LogQueryParameters } from '../log-query-parameters';
   styleUrl: './log-explorer.component.scss'
 })
 export class LogExplorerComponent implements OnChanges, OnInit, OnDestroy {
-  @Input() entityId?: string;
+  // Input signals
+  entityId = input<string>();
 
-  hasMoreEntries = false;
-  loading = false;
-  log: LogEntry[] = [];
+  // State signals
+  hasMoreEntries = signal(false);
+  loading = signal(false);
+  log = signal<LogEntry[]>([]);
+
+  // Computed signals
+  hasLogs = computed(() => this.log().length > 0);
+  isLoadingOrHasLogs = computed(() => this.loading() || this.hasLogs());
 
   private destroy$ = new AsyncSubject<any>();
   private firstLogEntryId?: number;
@@ -28,15 +34,31 @@ export class LogExplorerComponent implements OnChanges, OnInit, OnDestroy {
     private logService: LogService,
     private socketService: SocketService,
   ) {
+    // Effect to handle entityId changes
+    effect(() => {
+      const currentEntityId = this.entityId();
+      if (currentEntityId) {
+        this.handleEntityIdChange(currentEntityId);
+      }
+    });
+  }
+
+  private handleEntityIdChange(newEntityId: string): void {
+    this.log.set([]);
+    this.hasMoreEntries.set(false);
+    this.firstLogEntryId = undefined;
+    this.lastLogEntryId = undefined;
+    this.loadNewLogItems();
   }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (!changes['entityId'].isFirstChange()) {
-      if (this.entityId) {
+      const currentEntityId = this.entityId();
+      if (currentEntityId) {
         this.stopListeningForLogChanges(changes['entityId'].previousValue);
         this.startListeningForLogChanges();
-        this.log = [];
-        this.hasMoreEntries = false;
+        this.log.set([]);
+        this.hasMoreEntries.set(false);
         this.firstLogEntryId = undefined;
         this.lastLogEntryId = undefined;
         this.loadNewLogItems();
@@ -61,21 +83,24 @@ export class LogExplorerComponent implements OnChanges, OnInit, OnDestroy {
       take: DEFAULT_LOG_PAGE_SIZE,
     };
 
-    if (this.entityId) {
-      params.entity_id = this.entityId;
+    const entityId = this.entityId();
+    if (entityId) {
+      params.entity_id = entityId;
     }
-    this.loading = true;
+    this.loading.set(true);
     this.logService.getLog(params)
       .pipe(
-        finalize(() => this.loading = false),
+        finalize(() => this.loading.set(false)),
         takeUntil(this.destroy$),
       )
       .subscribe(logEntries => {
-        this.hasMoreEntries = !!params.take && !(logEntries.length < params.take);
-        this.log = [...this.log, ...logEntries];
+        this.hasMoreEntries.set(!!params.take && !(logEntries.length < params.take));
+        const currentLog = this.log();
+        this.log.set([...currentLog, ...logEntries]);
 
-        this.firstLogEntryId = (this.log[this.log.length - 1] || { id: null }).id;
-        this.lastLogEntryId = (this.log[0] || { id: null }).id;
+        const newLog = this.log();
+        this.firstLogEntryId = (newLog[newLog.length - 1] || { id: null }).id;
+        this.lastLogEntryId = (newLog[0] || { id: null }).id;
       });
   }
 
@@ -90,26 +115,29 @@ export class LogExplorerComponent implements OnChanges, OnInit, OnDestroy {
       };
     }
 
-    if (this.entityId) {
-      params.entity_id = this.entityId;
+    const entityId = this.entityId();
+    if (entityId) {
+      params.entity_id = entityId;
     }
 
-    this.loading = true;
+    this.loading.set(true);
     this.logService.getLog(params)
       .pipe(
-        finalize(() => this.loading = false),
+        finalize(() => this.loading.set(false)),
         takeUntil(this.destroy$),
       )
       .subscribe(logEntries => {
+        const currentLog = this.log();
         if (params.after) {
-          this.log = [...logEntries, ...this.log];
+          this.log.set([...logEntries, ...currentLog]);
         } else {
-          this.hasMoreEntries = !!params.take && !(logEntries.length < params.take);
-          this.log = [...this.log, ...logEntries];
+          this.hasMoreEntries.set(!!params.take && !(logEntries.length < params.take));
+          this.log.set([...currentLog, ...logEntries]);
         }
 
-        this.firstLogEntryId = (this.log[this.log.length - 1] || { id: null }).id;
-        this.lastLogEntryId = (this.log[0] || { id: null }).id;
+        const newLog = this.log();
+        this.firstLogEntryId = (newLog[newLog.length - 1] || { id: null }).id;
+        this.lastLogEntryId = (newLog[0] || { id: null }).id;
       });
   }
 

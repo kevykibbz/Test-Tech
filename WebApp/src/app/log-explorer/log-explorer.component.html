@@ -1,7 +1,7 @@
 <div> 2021.10.04 11:27:01 AM</div>
 <div> Testing opened.</div>
 
-@if(!!log.length && hasMoreEntries){
-    <button class="button"  type="button" [disabled]="loading"
+@if(hasLogs() && hasMoreEntries()){
+    <button class="button"  type="button" [disabled]="loading()"
         (click)="loadMore()">Load more...</button>
 }

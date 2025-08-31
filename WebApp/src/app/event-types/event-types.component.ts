@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Observable } from 'rxjs';
 import { EventType } from '../event-type';
@@ -13,13 +13,23 @@ import { EventService } from '../event.service';
   styleUrls: ['./event-types.component.scss']
 })
 export class EventTypesComponent implements OnInit {
-  eventTypes$!: Observable<EventType[]>;
-  eventTypeGroups$!: Observable<EventTypeGroup[]>;
-  selectedEventType: EventType | null = null;
-  selectedGroup: EventTypeGroup | null = null;
-  filteredEventTypes: EventType[] = [];
-  loading = false;
-  error: string | null = null;
+  // State signals
+  eventTypes = signal<EventType[]>([]);
+  eventTypeGroups = signal<EventTypeGroup[]>([]);
+  selectedEventType = signal<EventType | null>(null);
+  selectedGroup = signal<EventTypeGroup | null>(null);
+  loading = signal(false);
+  error = signal<string | null>(null);
+
+  // Computed signals
+  filteredEventTypes = computed(() => {
+    const group = this.selectedGroup();
+    const allEventTypes = this.eventTypes();
+    return group ? allEventTypes.filter(et => et.group_id === group.id) : [];
+  });
+
+  hasSelection = computed(() => !!this.selectedGroup());
+  hasEventTypeSelection = computed(() => !!this.selectedEventType());
 
   constructor(private eventService: EventService) {}
 
@@ -28,29 +38,42 @@ export class EventTypesComponent implements OnInit {
   }
 
   loadData(): void {
-    this.loading = true;
-    this.error = null;
-    this.eventTypes$ = this.eventService.getEventTypes();
-    this.eventTypeGroups$ = this.eventService.getEventTypeGroups();
-  }
-
-  onGroupSelect(group: EventTypeGroup): void {
-    this.selectedGroup = group;
-    this.selectedEventType = null;
+    this.loading.set(true);
+    this.error.set(null);
     
-    this.eventTypes$.subscribe(eventTypes => {
-      this.filteredEventTypes = eventTypes.filter(et => et.group_id === group.id);
+    this.eventService.getEventTypes().subscribe({
+      next: (eventTypes) => {
+        this.eventTypes.set(eventTypes);
+        this.loading.set(false);
+      },
+      error: (err) => {
+        this.error.set('Failed to load event types');
+        this.loading.set(false);
+      }
+    });
+
+    this.eventService.getEventTypeGroups().subscribe({
+      next: (groups) => {
+        this.eventTypeGroups.set(groups);
+      },
+      error: (err) => {
+        this.error.set('Failed to load event type groups');
+      }
     });
   }
 
+  onGroupSelect(group: EventTypeGroup): void {
+    this.selectedGroup.set(group);
+    this.selectedEventType.set(null);
+  }
+
   onEventTypeSelect(eventType: EventType): void {
-    this.selectedEventType = eventType;
+    this.selectedEventType.set(eventType);
   }
 
   onRefresh(): void {
-    this.selectedEventType = null;
-    this.selectedGroup = null;
-    this.filteredEventTypes = [];
+    this.selectedEventType.set(null);
+    this.selectedGroup.set(null);
     this.loadData();
   }
 

@@ -1,13 +1,17 @@
 <div class="people-container">
   <h2>People Management</h2>
   
-  <div class="loading" *ngIf="loading">
-    Loading...
-  </div>
+  @if (loading()) {
+    <div class="loading">
+      Loading...
+    </div>
+  }
   
-  <div class="error" *ngIf="error">
-    {{ error }}
-  </div>
+  @if (error()) {
+    <div class="error">
+      {{ error() }}
+    </div>
+  }
   
   <div class="actions">
     <button (click)="onRefresh()" class="btn btn-secondary">Refresh</button>
@@ -18,67 +22,74 @@
     <div class="people-panel">
       <h3>People</h3>
       <div class="people-list">
-        <div 
-          *ngFor="let person of people$ | async; trackBy: trackByPersonId"
-          class="person-item"
-          [class.selected]="selectedPerson?.id === person.id"
-          (click)="onPersonSelect(person)">
-          <div class="person-name">{{ getFullName(person) }}</div>
-          <div class="person-id">ID: {{ person.id }}</div>
-          <div class="person-email" *ngIf="person.email">{{ person.email }}</div>
-        </div>
+        @for (person of people(); track trackByPersonId($index, person)) {
+          <div 
+            class="person-item"
+            [class.selected]="selectedPerson()?.id === person.id"
+            (click)="onPersonSelect(person)">
+            <div class="person-name">{{ getFullName(person) }}</div>
+            <div class="person-id">ID: {{ person.id }}</div>
+            @if (person.email) {
+              <div class="person-email">{{ person.email }}</div>
+            }
+          </div>
+        }
       </div>
     </div>
     
     <!-- Details Panel -->
     <div class="details-panel">
       <h3>Person Details</h3>
-      <div *ngIf="selectedPerson" class="person-details">
-        <div class="detail-item">
-          <label>ID:</label>
-          <span>{{ selectedPerson.id }}</span>
-        </div>
-        <div class="detail-item">
-          <label>First Name:</label>
-          <span>{{ selectedPerson.firstName || 'Not specified' }}</span>
-        </div>
-        <div class="detail-item">
-          <label>Last Name:</label>
-          <span>{{ selectedPerson.lastName || 'Not specified' }}</span>
-        </div>
-        <div class="detail-item">
-          <label>Email:</label>
-          <span>{{ selectedPerson.email || 'Not specified' }}</span>
+      @if (selectedPerson()) {
+        <div class="person-details">
+          <div class="detail-item">
+            <label>ID:</label>
+            <span>{{ selectedPerson()!.id }}</span>
+          </div>
+          <div class="detail-item">
+            <label>First Name:</label>
+            <span>{{ selectedPerson()!.firstName || 'Not specified' }}</span>
+          </div>
+          <div class="detail-item">
+            <label>Last Name:</label>
+            <span>{{ selectedPerson()!.lastName || 'Not specified' }}</span>
+          </div>
+          <div class="detail-item">
+            <label>Email:</label>
+          <span>{{ selectedPerson()!.email || 'Not specified' }}</span>
         </div>
         <div class="detail-item">
           <label>Phone:</label>
-          <span>{{ selectedPerson.phone || 'Not specified' }}</span>
+          <span>{{ selectedPerson()!.phone || 'Not specified' }}</span>
         </div>
         <div class="detail-item">
           <label>Address:</label>
-          <span>{{ selectedPerson.address || 'Not specified' }}</span>
+          <span>{{ selectedPerson()!.address || 'Not specified' }}</span>
         </div>
         <div class="detail-item">
           <label>Date of Birth:</label>
-          <span>{{ formatDate(selectedPerson.dateOfBirth) }}</span>
+          <span>{{ formatDate(selectedPerson()!.dateOfBirth) }}</span>
         </div>
         <div class="detail-item">
           <label>Company:</label>
-          <span>{{ selectedPerson.company || 'Not specified' }}</span>
+          <span>{{ selectedPerson()!.company || 'Not specified' }}</span>
         </div>
         <div class="detail-item">
           <label>Job Title:</label>
-          <span>{{ selectedPerson.jobTitle || 'Not specified' }}</span>
+          <span>{{ selectedPerson()!.jobTitle || 'Not specified' }}</span>
         </div>
         <div class="detail-item">
           <label>Notes:</label>
-          <span class="notes">{{ selectedPerson.notes || 'No notes' }}</span>
+          <span class="notes">{{ selectedPerson()!.notes || 'No notes' }}</span>
         </div>
       </div>
-      
-      <div *ngIf="!selectedPerson" class="no-details">
+      }
+    
+    @if (!selectedPerson()) {
+      <div class="no-details">
         Select a person to view details
       </div>
+    }
     </div>
   </div>
 </div>
