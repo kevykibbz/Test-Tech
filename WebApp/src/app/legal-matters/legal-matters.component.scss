@@ -1,0 +1,527 @@
+// Action buttons in table
+.actions {
+  white-space: nowrap;
+  min-width: 300px; // Ensure enough space for all buttons
+  
+  .button {
+    margin-right: 8px;
+    margin-bottom: 4px;
+    padding: 6px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 12px;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+    transition: all 0.2s ease;
+    background-color: #f8f9fa;
+    color: #333;
+    min-width: 60px; // Ensure minimum button width
+    text-align: center;
+    
+    &:last-child {
+      margin-right: 0;
+    }
+    
+    &:hover:not(:disabled) {
+      background-color: #e9ecef;
+      border-color: #adb5bd;
+    }
+    
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    
+    &--small {
+      padding: 4px 8px;
+      font-size: 12px;
+      min-width: 50px;
+    }
+    
+    &--primary {
+      background-color: #007bff;
+      color: white;
+      border-color: #007bff;
+      
+      &:hover:not(:disabled) {
+        background-color: #0056b3;
+        border-color: #0056b3;
+      }
+    }
+    
+    &--secondary {
+      background-color: #6c757d;
+      color: white;
+      border-color: #6c757d;
+      
+      &:hover:not(:disabled) {
+        background-color: #545b62;
+        border-color: #545b62;
+      }
+    }
+    
+    &--info {
+      background-color: #17a2b8;
+      color: white;
+      border-color: #17a2b8;
+      
+      &:hover:not(:disabled) {
+        background-color: #138496;
+        border-color: #138496;
+      }
+    }
+    
+    &--danger {
+      background-color: #dc3545;
+      color: white;
+      border: 1px solid #dc3545;
+      
+      &:hover:not(:disabled) {
+        background-color: #c82333;
+        border-color: #c82333;
+      }
+    }
+  }
+}
+
+// Multi-select controls
+.multi-select-controls {
+  .button {
+    padding: 6px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-block;
+    transition: all 0.2s ease;
+    background-color: #f8f9fa;
+    color: #333;
+    margin-right: 8px;
+    
+    &:hover:not(:disabled) {
+      background-color: #e9ecef;
+      border-color: #adb5bd;
+    }
+    
+    &--primary {
+      background-color: #007bff;
+      color: white;
+      border-color: #007bff;
+      
+      &:hover:not(:disabled) {
+        background-color: #0056b3;
+        border-color: #0056b3;
+      }
+    }
+    
+    &--secondary {
+      background-color: #6c757d;
+      color: white;
+      border-color: #6c757d;
+      
+      &:hover:not(:disabled) {
+        background-color: #545b62;
+        border-color: #545b62;
+      }
+    }
+    
+    &--small {
+      padding: 4px 8px;
+      font-size: 12px;
+    }
+  }
+}
+
+// Table styles
+.table-container {
+  width: 100%;
+  overflow-x: auto;
+  margin: 20px 0;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 900px; // Reduced minimum width
+  
+  th, td {
+    padding: 8px 6px; // Reduced padding
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+    vertical-align: middle;
+    font-size: 14px; // Smaller font size
+    white-space: nowrap; // Prevent text wrapping
+    overflow: hidden;
+    text-overflow: ellipsis; // Show ellipsis for long text
+  }
+  
+  th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+    color: #495057;
+  }
+  
+  tr:hover {
+    background-color: #f5f5f5;
+  }
+  
+  // Specific column widths - more compact
+  // When checkbox is present (multi-select mode)
+  .table-container:has(th:nth-child(1) input[type="checkbox"]) {
+    th:nth-child(1), td:nth-child(1) { // Checkbox
+      width: 30px;
+      min-width: 30px;
+    }
+    
+    th:nth-child(2), td:nth-child(2) { // Matter Name
+      width: 150px;
+      min-width: 150px;
+    }
+    
+    th:nth-child(3), td:nth-child(3) { // Contract Type
+      width: 100px;
+      min-width: 100px;
+    }
+    
+    th:nth-child(4), td:nth-child(4) { // Status
+      width: 80px;
+      min-width: 80px;
+    }
+    
+    th:nth-child(5), td:nth-child(5) { // Contract Value
+      width: 100px;
+      min-width: 100px;
+    }
+    
+    th:nth-child(6), td:nth-child(6) { // Governing Law
+      width: 100px;
+      min-width: 100px;
+    }
+    
+    th:nth-child(7), td:nth-child(7) { // Assigned Lawyer
+      width: 120px;
+      min-width: 120px;
+    }
+    
+    th:nth-child(8), td:nth-child(8) { // Description
+      width: 120px;
+      min-width: 120px;
+    }
+    
+    th:nth-child(9), td:nth-child(9) { // Actions
+      width: 200px;
+      min-width: 200px;
+    }
+  }
+  
+  // When no checkbox (normal mode)
+  th:nth-child(1), td:nth-child(1) { // Matter Name
+    width: 150px;
+    min-width: 150px;
+  }
+  
+  th:nth-child(2), td:nth-child(2) { // Contract Type
+    width: 100px;
+    min-width: 100px;
+  }
+  
+  th:nth-child(3), td:nth-child(3) { // Status
+    width: 80px;
+    min-width: 80px;
+  }
+  
+  th:nth-child(4), td:nth-child(4) { // Contract Value
+    width: 100px;
+    min-width: 100px;
+  }
+  
+  th:nth-child(5), td:nth-child(5) { // Governing Law
+    width: 100px;
+    min-width: 100px;
+  }
+  
+  th:nth-child(6), td:nth-child(6) { // Assigned Lawyer
+    width: 120px;
+    min-width: 120px;
+  }
+  
+  th:nth-child(7), td:nth-child(7) { // Description
+    width: 120px;
+    min-width: 120px;
+  }
+  
+  th:nth-child(8), td:nth-child(8) { // Actions
+    width: 200px;
+    min-width: 200px;
+  }
+}
+
+// Action buttons styles
+.action-buttons {
+  display: flex;
+  gap: 4px; // Small gap between buttons
+  flex-wrap: wrap;
+  
+  button {
+    padding: 4px 8px; // Smaller button padding
+    font-size: 12px; // Smaller font
+    border: none;
+    border-radius: 3px;
+    cursor: pointer;
+    white-space: nowrap;
+    
+    &.view-btn {
+      background-color: #007bff;
+      color: white;
+    }
+    
+    &.edit-btn {
+      background-color: #28a745;
+      color: white;
+    }
+    
+    &.delete-btn {
+      background-color: #dc3545;
+      color: white;
+    }
+    
+    &.assign-btn {
+      background-color: #6f42c1;
+      color: white;
+    }
+    
+    &:hover {
+      opacity: 0.8;
+    }
+  }
+}
+
+.selected-row {
+  background-color: #e3f2fd !important;
+}
+
+.lawyer-assignment {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.assigned-badge {
+  background-color: #28a745;
+  color: white;
+  border-radius: 50%;
+  width: 16px;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: bold;
+}
+
+// Modal styles
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: white;
+  padding: 24px;
+  border-radius: 8px;
+  max-width: 600px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  
+  h3 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    color: #333;
+  }
+}
+
+// Details modal specific styles
+.details-content {
+  .detail-row {
+    display: flex;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #f0f0f0;
+    
+    strong {
+      flex: 0 0 150px;
+      color: #555;
+    }
+    
+    span {
+      flex: 1;
+      color: #333;
+    }
+  }
+}
+
+// Form styles improvements
+.form-row {
+  margin-bottom: 16px;
+  
+  label {
+    display: block;
+    margin-bottom: 4px;
+    font-weight: 500;
+    color: #555;
+  }
+  
+  input, select, textarea {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    
+    &:focus {
+      outline: none;
+      border-color: #007bff;
+      box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+    }
+    
+    &:disabled {
+      background-color: #f8f9fa;
+      cursor: not-allowed;
+    }
+  }
+  
+  textarea {
+    resize: vertical;
+    min-height: 80px;
+  }
+}
+
+.form-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
+  justify-content: flex-end;
+  
+  .button {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    
+    &--primary {
+      background-color: #007bff;
+      color: white;
+      
+      &:hover:not(:disabled) {
+        background-color: #0056b3;
+      }
+    }
+    
+    &--secondary {
+      background-color: #6c757d;
+      color: white;
+      
+      &:hover:not(:disabled) {
+        background-color: #545b62;
+      }
+    }
+    
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+  }
+}
+
+// Table improvements
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+  
+  th, td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #dee2e6;
+  }
+  
+  th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+    color: #495057;
+  }
+  
+  tr:hover {
+    background-color: #f8f9fa;
+  }
+}
+
+// Multi-select and lawyer assignment styles
+.multi-select-controls {
+  .button--info {
+    background-color: #17a2b8;
+    color: white;
+    border: 1px solid #17a2b8;
+    
+    &:hover:not(:disabled) {
+      background-color: #138496;
+      border-color: #138496;
+    }
+  }
+}
+
+.selected-row {
+  background-color: #e3f2fd !important;
+  border-left: 3px solid #2196f3;
+}
+
+.lawyer-assignment {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  
+  .assigned-badge {
+    background-color: #28a745;
+    color: white;
+    border-radius: 50%;
+    width: 18px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: bold;
+  }
+}
+
+.multi-select-controls {
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  border-radius: 5px;
+  padding: 15px;
+  margin: 20px 0;
+  
+  .button--small {
+    padding: 6px 12px;
+    font-size: 13px;
+    margin-right: 8px;
+    
+    &:last-child {
+      margin-right: 0;
+    }
+  }
+}

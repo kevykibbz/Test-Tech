@@ -1,0 +1,8 @@
+# top-most EditorConfig file
+root = true
+
+# Languages
+[*.cs]
+
+# Default severity for all analyzer diagnostics
+dotnet_analyzer_diagnostic.severity = none

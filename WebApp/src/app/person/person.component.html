@@ -1,0 +1,25 @@
+
+@switch (loading) {
+  @case (true) {
+    <div>Loading...</div>
+  }
+  @default {
+    @if (person) {
+      <div>
+        <div>
+          @switch (person.hasPicture) {
+            @case (true) {
+              <img [src]="person.pictureUrl">
+            }
+            @default {
+              {{person.initials!}}
+            }
+          }
+        </div>
+        <div>{{person.fullName}}</div>
+      </div>
+    } @else {
+      <ng-content></ng-content>
+    }
+  }
+}

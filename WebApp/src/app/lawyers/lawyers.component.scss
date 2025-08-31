@@ -1,0 +1,403 @@
+.lawyers-container {
+  padding: 20px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+h2 {
+  margin-bottom: 20px;
+  color: #333;
+}
+
+.loading, .error {
+  padding: 10px;
+  margin: 10px 0;
+  border-radius: 4px;
+}
+
+.loading {
+  background-color: #e3f2fd;
+  color: #1976d2;
+}
+
+.error {
+  background-color: #ffebee;
+  color: #c62828;
+}
+
+.actions {
+  margin-bottom: 20px;
+  display: flex;
+  gap: 10px;
+}
+
+.btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.2s ease;
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  background-color: #007bff;
+  color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background-color: #0056b3;
+}
+
+.btn-secondary {
+  background-color: #6c757d;
+  color: white;
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background-color: #5a6268;
+}
+
+.btn-warning {
+  background-color: #ffc107;
+  color: #212529;
+}
+
+.btn-warning:hover:not(:disabled) {
+  background-color: #e0a800;
+}
+
+.btn-danger {
+  background-color: #dc3545;
+  color: white;
+}
+
+.btn-danger:hover:not(:disabled) {
+  background-color: #c82333;
+}
+
+.content-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  min-height: 600px;
+}
+
+.lawyers-panel, .details-panel {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 16px;
+  background-color: #fff;
+}
+
+h3 {
+  margin-top: 0;
+  margin-bottom: 16px;
+  color: #333;
+  border-bottom: 2px solid #007bff;
+  padding-bottom: 8px;
+}
+
+h4 {
+  margin-top: 0;
+  margin-bottom: 16px;
+  color: #333;
+}
+
+.lawyers-list {
+  max-height: 500px;
+  overflow-y: auto;
+}
+
+.lawyer-item {
+  padding: 12px;
+  margin-bottom: 8px;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.lawyer-item:hover {
+  background-color: #f5f5f5;
+  border-color: #007bff;
+}
+
+.lawyer-item.selected {
+  background-color: #e3f2fd;
+  border-color: #007bff;
+  box-shadow: 0 2px 4px rgba(0,123,255,0.2);
+}
+
+.lawyer-name {
+  font-weight: 600;
+  margin-bottom: 4px;
+  color: #333;
+}
+
+.lawyer-company {
+  font-size: 14px;
+  color: #007bff;
+  margin-bottom: 4px;
+}
+
+.lawyer-id {
+  font-size: 12px;
+  color: #666;
+}
+
+.no-details {
+  text-align: center;
+  color: #666;
+  font-style: italic;
+  padding: 20px;
+}
+
+.lawyer-details, .form-panel {
+  background-color: #f8f9fa;
+  padding: 16px;
+  border-radius: 4px;
+  max-height: 500px;
+  overflow-y: auto;
+}
+
+.detail-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.detail-item:last-child {
+  border-bottom: none;
+}
+
+.detail-item label {
+  font-weight: 600;
+  color: #333;
+  min-width: 100px;
+  flex-shrink: 0;
+}
+
+.detail-item span {
+  color: #666;
+  text-align: right;
+  flex: 1;
+  margin-left: 10px;
+}
+
+/* Form Styles */
+.form-group {
+  margin-bottom: 16px;
+}
+
+.form-group label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 4px;
+  color: #333;
+}
+
+.form-control {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  font-size: 14px;
+  transition: border-color 0.2s ease;
+}
+
+.form-control:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
+}
+
+.form-control:invalid {
+  border-color: #dc3545;
+}
+
+.form-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid #e0e0e0;
+}
+
+@media (max-width: 768px) {
+  .content-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  
+  .actions {
+    flex-wrap: wrap;
+  }
+  
+  .detail-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .detail-item span {
+    text-align: left;
+    margin-left: 0;
+    margin-top: 4px;
+  }
+  
+  .detail-item label {
+    min-width: auto;
+  }
+  
+  .form-actions {
+    justify-content: stretch;
+    flex-direction: column;
+  }
+}
+
+// Assigned Legal Matters Styles
+.assigned-matters-section {
+  margin-top: 30px;
+  padding: 20px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e9ecef;
+
+  h4 {
+    margin: 0 0 15px 0;
+    color: #495057;
+    font-size: 18px;
+  }
+
+  .matters-count {
+    margin-bottom: 15px;
+    padding: 10px;
+    background-color: #e3f2fd;
+    border-radius: 4px;
+    color: #1976d2;
+  }
+
+  .matters-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  .matter-item {
+    background: white;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    padding: 15px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    transition: box-shadow 0.2s ease;
+
+    &:hover {
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+    }
+  }
+
+  .matter-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+
+    h5 {
+      margin: 0;
+      color: #333;
+      font-size: 16px;
+    }
+  }
+
+  .matter-status {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+
+    &.status-active {
+      background-color: #d4edda;
+      color: #155724;
+    }
+
+    &.status-pending {
+      background-color: #fff3cd;
+      color: #856404;
+    }
+
+    &.status-completed {
+      background-color: #cce5ff;
+      color: #004085;
+    }
+
+    &.status-on-hold, &.status-onhold {
+      background-color: #f8d7da;
+      color: #721c24;
+    }
+
+    &.status-unknown {
+      background-color: #e2e3e5;
+      color: #383d41;
+    }
+  }
+
+  .matter-details {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 8px;
+  }
+
+  .matter-detail {
+    display: flex;
+    justify-content: space-between;
+    font-size: 14px;
+
+    .label {
+      font-weight: 600;
+      color: #6c757d;
+    }
+  }
+
+  .no-matters {
+    text-align: center;
+    padding: 40px 20px;
+    color: #6c757d;
+    font-style: italic;
+
+    p {
+      margin: 0;
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .assigned-matters-section {
+    .matters-count {
+      text-align: center;
+    }
+
+    .matter-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 8px;
+    }
+
+    .matter-details {
+      grid-template-columns: 1fr;
+    }
+
+    .matter-detail {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  }
+}

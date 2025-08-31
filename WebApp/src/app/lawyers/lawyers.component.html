@@ -1,0 +1,208 @@
+<div class="lawyers-container">
+  <h2>Lawyers Management</h2>
+  
+  <div class="loading" *ngIf="loading">
+    Loading...
+  </div>
+  
+  <div class="error" *ngIf="error">
+    {{ error }}
+  </div>
+  
+  <div class="actions">
+    <button (click)="onRefresh()" class="btn btn-secondary">Refresh</button>
+    <button (click)="onShowCreateForm()" class="btn btn-primary">Add New Lawyer</button>
+    <button (click)="onShowEditForm()" [disabled]="!selectedLawyer" class="btn btn-warning">Edit Lawyer</button>
+    <button (click)="onDeleteLawyer()" [disabled]="!selectedLawyer" class="btn btn-danger">Delete Lawyer</button>
+  </div>
+  
+  <div class="content-grid">
+    <!-- Lawyers List Panel -->
+    <div class="lawyers-panel">
+      <h3>Lawyers</h3>
+      <div class="lawyers-list">
+        <div 
+          *ngFor="let lawyer of lawyers$ | async; trackBy: trackById"
+          class="lawyer-item"
+          [class.selected]="selectedLawyer?.id === lawyer.id"
+          (click)="onLawyerSelect(lawyer)">
+          <div class="lawyer-name">{{ getFullName(lawyer) }}</div>
+          <div class="lawyer-company">{{ lawyer.companyName }}</div>
+          <div class="lawyer-id">ID: {{ lawyer.id }}</div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Details/Forms Panel -->
+    <div class="details-panel">
+      <h3>Details</h3>
+      
+      <!-- Create Form -->
+      <div *ngIf="showCreateForm" class="form-panel">
+        <h4>Create New Lawyer</h4>
+        <form (ngSubmit)="onCreateLawyer()" #createForm="ngForm">
+          <div class="form-group">
+            <label for="firstName">First Name *</label>
+            <input 
+              type="text" 
+              id="firstName" 
+              name="firstName"
+              [(ngModel)]="newLawyer.firstName" 
+              required 
+              class="form-control">
+          </div>
+          <div class="form-group">
+            <label for="lastName">Last Name *</label>
+            <input 
+              type="text" 
+              id="lastName" 
+              name="lastName"
+              [(ngModel)]="newLawyer.lastName" 
+              required 
+              class="form-control">
+          </div>
+          <div class="form-group">
+            <label for="companyName">Company Name *</label>
+            <input 
+              type="text" 
+              id="companyName" 
+              name="companyName"
+              [(ngModel)]="newLawyer.companyName" 
+              required 
+              class="form-control">
+          </div>
+          <div class="form-actions">
+            <button type="submit" [disabled]="!createForm.form.valid || loading" class="btn btn-primary">
+              Create Lawyer
+            </button>
+            <button type="button" (click)="onCancelForm()" class="btn btn-secondary">Cancel</button>
+          </div>
+        </form>
+      </div>
+      
+      <!-- Edit Form -->
+      <div *ngIf="showEditForm" class="form-panel">
+        <h4>Edit Lawyer</h4>
+        <form (ngSubmit)="onUpdateLawyer()" #editForm="ngForm">
+          <div class="form-group">
+            <label for="editFirstName">First Name *</label>
+            <input 
+              type="text" 
+              id="editFirstName" 
+              name="editFirstName"
+              [(ngModel)]="editLawyer.firstName" 
+              required 
+              class="form-control">
+          </div>
+          <div class="form-group">
+            <label for="editLastName">Last Name *</label>
+            <input 
+              type="text" 
+              id="editLastName" 
+              name="editLastName"
+              [(ngModel)]="editLawyer.lastName" 
+              required 
+              class="form-control">
+          </div>
+          <div class="form-group">
+            <label for="editCompanyName">Company Name *</label>
+            <input 
+              type="text" 
+              id="editCompanyName" 
+              name="editCompanyName"
+              [(ngModel)]="editLawyer.companyName" 
+              required 
+              class="form-control">
+          </div>
+          <div class="form-actions">
+            <button type="submit" [disabled]="!editForm.form.valid || loading" class="btn btn-primary">
+              Update Lawyer
+            </button>
+            <button type="button" (click)="onCancelForm()" class="btn btn-secondary">Cancel</button>
+          </div>
+        </form>
+      </div>
+      
+      <!-- Lawyer Details -->
+      <div *ngIf="selectedLawyer && !showCreateForm && !showEditForm" class="lawyer-details">
+        <div class="detail-item">
+          <label>ID:</label>
+          <span>{{ selectedLawyer.id }}</span>
+        </div>
+        <div class="detail-item">
+          <label>First Name:</label>
+          <span>{{ selectedLawyer.firstName }}</span>
+        </div>
+        <div class="detail-item">
+          <label>Last Name:</label>
+          <span>{{ selectedLawyer.lastName }}</span>
+        </div>
+        <div class="detail-item">
+          <label>Full Name:</label>
+          <span>{{ getFullName(selectedLawyer) }}</span>
+        </div>
+        <div class="detail-item">
+          <label>Company:</label>
+          <span>{{ selectedLawyer.companyName }}</span>
+        </div>
+        <div class="detail-item">
+          <label>Created At:</label>
+          <span>{{ selectedLawyer.createdAt | date:'dd MMM yyyy HH:mm' }}</span>
+        </div>
+        <div class="detail-item" *ngIf="selectedLawyer.lastModified">
+          <label>Last Modified:</label>
+          <span>{{ selectedLawyer.lastModified | date:'dd MMM yyyy HH:mm' }}</span>
+        </div>
+        
+        <!-- Assigned Legal Matters Section -->
+        <div class="assigned-matters-section">
+          <h4>Assigned Legal Matters</h4>
+          <div *ngIf="selectedLawyer.assignedMatters && selectedLawyer.assignedMatters.length > 0; else noMatters">
+            <div class="matters-count">
+              <strong>Total: {{ selectedLawyer.assignedMatters.length }} matter(s)</strong>
+            </div>
+            <div class="matters-list">
+              <div 
+                *ngFor="let matter of selectedLawyer.assignedMatters; trackBy: trackMatterById" 
+                class="matter-item">
+                <div class="matter-header">
+                  <h5>{{ matter.matterName }}</h5>
+                  <span class="matter-status" [class]="'status-' + (matter.status || 'unknown').toLowerCase()">
+                    {{ matter.status || 'N/A' }}
+                  </span>
+                </div>
+                <div class="matter-details">
+                  <div class="matter-detail">
+                    <span class="label">Contract Type:</span>
+                    <span>{{ matter.contractType || 'N/A' }}</span>
+                  </div>
+                  <div class="matter-detail" *ngIf="matter.contractValue">
+                    <span class="label">Value:</span>
+                    <span>${{ matter.contractValue | number:'1.2-2' }}</span>
+                  </div>
+                  <div class="matter-detail" *ngIf="matter.governingLaw">
+                    <span class="label">Governing Law:</span>
+                    <span>{{ matter.governingLaw }}</span>
+                  </div>
+                  <div class="matter-detail">
+                    <span class="label">Created:</span>
+                    <span>{{ matter.createdAt | date:'dd MMM yyyy' }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <ng-template #noMatters>
+            <div class="no-matters">
+              <p>No legal matters assigned to this lawyer.</p>
+            </div>
+          </ng-template>
+        </div>
+      </div>
+      
+      <div *ngIf="!selectedLawyer && !showCreateForm && !showEditForm" class="no-details">
+        Select a lawyer to view details or create a new lawyer
+      </div>
+    </div>
+  </div>
+</div>

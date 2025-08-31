@@ -1,0 +1,96 @@
+<div class="event-types-container">
+  <h2>Event Types and Groups Management</h2>
+  
+  <div class="loading" *ngIf="loading">
+    Loading...
+  </div>
+  
+  <div class="error" *ngIf="error">
+    {{ error }}
+  </div>
+  
+  <div class="actions">
+    <button (click)="onRefresh()" class="btn btn-secondary">Refresh</button>
+  </div>
+  
+  <div class="content-grid">
+    <!-- Event Type Groups Panel -->
+    <div class="groups-panel">
+      <h3>Event Type Groups</h3>
+      <div class="groups-list">
+        <div 
+          *ngFor="let group of eventTypeGroups$ | async; trackBy: trackByGroupId"
+          class="group-item"
+          [class.selected]="selectedGroup?.id === group.id"
+          (click)="onGroupSelect(group)">
+          <div class="group-name">{{ group.name }}</div>
+          <div class="group-id">ID: {{ group.id }}</div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Event Types Panel -->
+    <div class="event-types-panel">
+      <h3>Event Types</h3>
+      <div *ngIf="!selectedGroup" class="no-selection">
+        Select a group to view its event types
+      </div>
+      <div *ngIf="selectedGroup" class="event-types-list">
+        <div class="selected-group-info">
+          <strong>Selected Group:</strong> {{ selectedGroup.name }}
+        </div>
+        <div 
+          *ngFor="let eventType of filteredEventTypes; trackBy: trackByEventTypeId"
+          class="event-type-item"
+          [class.selected]="selectedEventType?.id === eventType.id"
+          (click)="onEventTypeSelect(eventType)">
+          <div class="event-type-name">{{ eventType.name }}</div>
+          <div class="event-type-id">ID: {{ eventType.id }}</div>
+          <div class="event-type-group">Group ID: {{ eventType.group_id }}</div>
+        </div>
+        
+        <div *ngIf="filteredEventTypes.length === 0" class="no-events">
+          No event types found for this group
+        </div>
+      </div>
+    </div>
+    
+    <!-- Details Panel -->
+    <div class="details-panel">
+      <h3>Details</h3>
+      <div *ngIf="selectedEventType" class="event-type-details">
+        <div class="detail-item">
+          <label>Event Type ID:</label>
+          <span>{{ selectedEventType.id }}</span>
+        </div>
+        <div class="detail-item">
+          <label>Name:</label>
+          <span>{{ selectedEventType.name }}</span>
+        </div>
+        <div class="detail-item">
+          <label>Group ID:</label>
+          <span>{{ selectedEventType.group_id }}</span>
+        </div>
+        <div class="detail-item">
+          <label>Group Name:</label>
+          <span>{{ selectedGroup?.name }}</span>
+        </div>
+      </div>
+      
+      <div *ngIf="selectedGroup && !selectedEventType" class="group-details">
+        <div class="detail-item">
+          <label>Group ID:</label>
+          <span>{{ selectedGroup.id }}</span>
+        </div>
+        <div class="detail-item">
+          <label>Group Name:</label>
+          <span>{{ selectedGroup.name }}</span>
+        </div>
+      </div>
+      
+      <div *ngIf="!selectedGroup && !selectedEventType" class="no-details">
+        Select a group or event type to view details
+      </div>
+    </div>
+  </div>
+</div>

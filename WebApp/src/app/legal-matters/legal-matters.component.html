@@ -1,0 +1,441 @@
+<button class="button button--primary" type="button" (click)="createLegalMatter()">Create Legal Matter</button>
+
+<!-- Create Legal Matter Form -->
+@if (showCreateForm) {
+  <div style="background: #f5f5f5; padding: 20px; margin: 20px 0; border-radius: 8px;">
+    <h3>Create New Legal Matter</h3>
+    <form (ngSubmit)="submitLegalMatter()" #createForm="ngForm">
+      <div style="margin-bottom: 15px;">
+        <label for="matterName" style="display: block; margin-bottom: 5px; font-weight: bold;">Matter Name *</label>
+        <input 
+          type="text" 
+          id="matterName" 
+          name="matterName" 
+          [(ngModel)]="newLegalMatter.matterName" 
+          required
+          style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+      </div>
+      
+      <div style="margin-bottom: 15px;">
+        <label for="contractType" style="display: block; margin-bottom: 5px; font-weight: bold;">Contract Type</label>
+        <input 
+          type="text" 
+          id="contractType" 
+          name="contractType" 
+          [(ngModel)]="newLegalMatter.contractType"
+          style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+      </div>
+      
+      <div style="margin-bottom: 15px;">
+        <label for="status" style="display: block; margin-bottom: 5px; font-weight: bold;">Status</label>
+        <select 
+          id="status" 
+          name="status" 
+          [(ngModel)]="newLegalMatter.status"
+          style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+          <option value="">Select Status</option>
+          <option value="Active">Active</option>
+          <option value="Pending">Pending</option>
+          <option value="Completed">Completed</option>
+          <option value="On Hold">On Hold</option>
+        </select>
+      </div>
+      
+      <div style="margin-bottom: 15px;">
+        <label for="contractValue" style="display: block; margin-bottom: 5px; font-weight: bold;">Contract Value</label>
+        <input 
+          type="number" 
+          id="contractValue" 
+          name="contractValue" 
+          [(ngModel)]="newLegalMatter.contractValue"
+          step="0.01"
+          style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+      </div>
+      
+      <div style="margin-bottom: 15px;">
+        <label for="governingLaw" style="display: block; margin-bottom: 5px; font-weight: bold;">Governing Law</label>
+        <input 
+          type="text" 
+          id="governingLaw" 
+          name="governingLaw" 
+          [(ngModel)]="newLegalMatter.governingLaw"
+          style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+      </div>
+      
+      <div style="margin-bottom: 15px;">
+        <label for="description" style="display: block; margin-bottom: 5px; font-weight: bold;">Description</label>
+        <textarea 
+          id="description" 
+          name="description" 
+          [(ngModel)]="newLegalMatter.description"
+          rows="3"
+          style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; resize: vertical;"></textarea>
+      </div>
+      
+      <div style="display: flex; gap: 10px;">
+        <button 
+          type="submit" 
+          [disabled]="creating || !createForm.form.valid"
+          class="button button--primary">
+          {{ creating ? 'Creating...' : 'Create Legal Matter' }}
+        </button>
+        <button 
+          type="button" 
+          (click)="cancelCreate()"
+          [disabled]="creating"
+          class="button button--secondary">
+          Cancel
+        </button>
+      </div>
+    </form>
+  </div>
+}
+
+@if (loading) {
+  <div style="text-align: center; padding: 20px;">
+    Loading legal matters...
+  </div>
+} @else {
+  <!-- Multi-select controls -->
+  <div class="multi-select-controls" style="margin: 20px 0; padding: 15px; background: #f8f9fa; border-radius: 5px;">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+      <div>
+        <button 
+          type="button"
+          (click)="toggleMultiSelectMode()"
+          class="button button--secondary button--small">
+          {{ isMultiSelectMode ? 'Exit Multi-Select' : 'Multi-Select Mode' }}
+        </button>
+        
+        @if (isMultiSelectMode) {
+          <button 
+            type="button"
+            (click)="selectAllLegalMatters()"
+            class="button button--secondary button--small"
+            style="margin-left: 10px;">
+            Select All
+          </button>
+          <button 
+            type="button"
+            (click)="clearSelection()"
+            class="button button--secondary button--small"
+            style="margin-left: 10px;">
+            Clear All
+          </button>
+        }
+      </div>
+      
+      <div>
+        @if (hasSelectedItems) {
+          <span style="margin-right: 15px; font-weight: bold;">
+            {{ selectedCount }} item(s) selected
+          </span>
+          <button 
+            type="button"
+            (click)="openLawyerAssignmentModal()"
+            class="button button--primary button--small">
+            Assign Lawyer to Selected
+          </button>
+        }
+      </div>
+    </div>
+  </div>
+
+  <div class="table-container">
+    <table>
+      <thead>
+        <tr>
+          @if (isMultiSelectMode) {
+            <th style="width: 40px;">
+              <input 
+                type="checkbox" 
+                [checked]="selectedCount === legalMatters.length && legalMatters.length > 0"
+                (change)="selectedCount === legalMatters.length ? clearSelection() : selectAllLegalMatters()">
+            </th>
+          }
+          <th>Matter Name</th>
+          <th>Contract Type</th>
+          <th>Status</th>
+          <th>Contract Value</th>
+          <th>Governing Law</th>
+          <th>Assigned Lawyer</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+    <tbody>
+      @for (legalMatter of legalMatters; track legalMatter.id) {
+        <tr [class.selected-row]="selectedLegalMattersData[legalMatter.id!]">
+          @if (isMultiSelectMode) {
+            <td>
+              <input 
+                type="checkbox"
+                [checked]="selectedLegalMattersData[legalMatter.id!]"
+                (change)="toggleLegalMatterSelection(legalMatter.id!)">
+            </td>
+          }
+          <td>
+            <h5><a [href]="'/legal-matter-details/' + legalMatter.id">{{ legalMatter.matterName }}</a></h5>
+          </td>
+          <td>{{ legalMatter.contractType || 'N/A' }}</td>
+          <td>{{ legalMatter.status || 'N/A' }}</td>
+          <td>{{ legalMatter.contractValue ? ('$' + (legalMatter.contractValue | number:'1.2-2')) : 'N/A' }}</td>
+          <td>{{ legalMatter.governingLaw || 'N/A' }}</td>
+          <td>
+            <span class="lawyer-assignment">
+              {{ getLawyerName(legalMatter.lawyerId) }}
+              @if (legalMatter.lawyerId) {
+                <span class="assigned-badge">✓</span>
+              }
+            </span>
+          </td>
+          <td class="actions">
+            <div class="action-buttons">
+              <button 
+                type="button" 
+                (click)="viewLegalMatter(legalMatter)"
+                class="view-btn">
+                View
+              </button>
+              <button 
+                type="button" 
+                (click)="editLegalMatter(legalMatter)"
+                class="edit-btn">
+                Edit
+              </button>
+              <button 
+                type="button" 
+                (click)="deleteLegalMatter(legalMatter)"
+                [disabled]="deleting"
+                class="delete-btn">
+                Delete
+              </button>
+              <button 
+                type="button" 
+                (click)="assignLawyer(legalMatter)"
+                class="assign-btn">
+                {{ legalMatter.lawyerId ? 'Change' : 'Assign' }}
+              </button>
+            </div>
+          </td>
+        </tr>
+      }
+      @if (legalMatters.length === 0) {
+        <tr>
+          <td [attr.colspan]="isMultiSelectMode ? 8 : 7" style="text-align: center; padding: 20px;">
+            No legal matters found.
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+  </div>
+
+  <app-paginator [disabled]="loading" [hidden]="!legalMatterCount" [pageSize]="legalMattersPerPage"
+  [totalItems]="legalMatterCount" (selectedPageChange)="onPageChange($event)"></app-paginator>
+}
+
+<!-- Edit Legal Matter Form -->
+@if (showEditForm && editingLegalMatter) {
+  <div class="modal-overlay" (click)="cancelEdit()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <h3>Edit Legal Matter</h3>
+      <form (ngSubmit)="submitEditLegalMatter()">
+        <div class="form-row">
+          <label for="edit-matterName">Matter Name*</label>
+          <input
+            id="edit-matterName"
+            name="matterName"
+            type="text"
+            [(ngModel)]="editingLegalMatter.matterName"
+            required
+            [disabled]="creating"
+            placeholder="Enter matter name"
+          />
+        </div>
+
+        <div class="form-row">
+          <label for="edit-contractType">Contract Type</label>
+          <input
+            id="edit-contractType"
+            name="contractType"
+            type="text"
+            [(ngModel)]="editingLegalMatter.contractType"
+            [disabled]="creating"
+            placeholder="Enter contract type"
+          />
+        </div>
+
+        <div class="form-row">
+          <label for="edit-status">Status</label>
+          <select
+            id="edit-status"
+            name="status"
+            [(ngModel)]="editingLegalMatter.status"
+            [disabled]="creating"
+          >
+            <option value="">Select status</option>
+            <option value="Active">Active</option>
+            <option value="Inactive">Inactive</option>
+            <option value="Pending">Pending</option>
+            <option value="Completed">Completed</option>
+            <option value="Terminated">Terminated</option>
+          </select>
+        </div>
+
+        <div class="form-row">
+          <label for="edit-contractValue">Contract Value</label>
+          <input
+            id="edit-contractValue"
+            name="contractValue"
+            type="number"
+            [(ngModel)]="editingLegalMatter.contractValue"
+            [disabled]="creating"
+            placeholder="Enter contract value"
+            step="0.01"
+          />
+        </div>
+
+        <div class="form-row">
+          <label for="edit-governingLaw">Governing Law</label>
+          <input
+            id="edit-governingLaw"
+            name="governingLaw"
+            type="text"
+            [(ngModel)]="editingLegalMatter.governingLaw"
+            [disabled]="creating"
+            placeholder="Enter governing law"
+          />
+        </div>
+
+        <div class="form-row">
+          <label for="edit-description">Description</label>
+          <textarea
+            id="edit-description"
+            name="description"
+            [(ngModel)]="editingLegalMatter.description"
+            [disabled]="creating"
+            placeholder="Enter description"
+            rows="4"
+          ></textarea>
+        </div>
+
+        <div class="form-row">
+          <label for="edit-effectiveDate">Effective Date</label>
+          <input
+            id="edit-effectiveDate"
+            name="effectiveDate"
+            type="date"
+            [(ngModel)]="editingLegalMatter.effectiveDate"
+            [disabled]="creating"
+          />
+        </div>
+
+        <div class="form-row">
+          <label for="edit-expirationDate">Expiration Date</label>
+          <input
+            id="edit-expirationDate"
+            name="expirationDate"
+            type="date"
+            [(ngModel)]="editingLegalMatter.expirationDate"
+            [disabled]="creating"
+          />
+        </div>
+
+        <div class="form-actions">
+          <button 
+            type="submit" 
+            [disabled]="creating || !editingLegalMatter.matterName?.trim()"
+            class="button button--primary">
+            {{ creating ? 'Updating...' : 'Update Legal Matter' }}
+          </button>
+          <button 
+            type="button" 
+            (click)="cancelEdit()"
+            [disabled]="creating"
+            class="button button--secondary">
+            Cancel
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+}
+
+<!-- Legal Matter Details Modal -->
+@if (showDetailsModal && selectedLegalMatter) {
+  <div class="modal-overlay" (click)="closeDetailsModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <h3>Legal Matter Details</h3>
+      <div class="details-content">
+        <div class="detail-row">
+          <strong>Matter Name:</strong>
+          <span>{{ selectedLegalMatter.matterName }}</span>
+        </div>
+        <div class="detail-row">
+          <strong>Contract Type:</strong>
+          <span>{{ selectedLegalMatter.contractType || 'N/A' }}</span>
+        </div>
+        <div class="detail-row">
+          <strong>Status:</strong>
+          <span>{{ selectedLegalMatter.status || 'N/A' }}</span>
+        </div>
+        <div class="detail-row">
+          <strong>Contract Value:</strong>
+          <span>{{ selectedLegalMatter.contractValue ? ('$' + (selectedLegalMatter.contractValue | number:'1.2-2')) : 'N/A' }}</span>
+        </div>
+        <div class="detail-row">
+          <strong>Governing Law:</strong>
+          <span>{{ selectedLegalMatter.governingLaw || 'N/A' }}</span>
+        </div>
+        <div class="detail-row">
+          <strong>Description:</strong>
+          <span>{{ selectedLegalMatter.description || 'N/A' }}</span>
+        </div>
+        <div class="detail-row">
+          <strong>Effective Date:</strong>
+          <span>{{ selectedLegalMatter.effectiveDate ? (selectedLegalMatter.effectiveDate | date:'dd MMM yyyy') : 'N/A' }}</span>
+        </div>
+        <div class="detail-row">
+          <strong>Expiration Date:</strong>
+          <span>{{ selectedLegalMatter.expirationDate ? (selectedLegalMatter.expirationDate | date:'dd MMM yyyy') : 'N/A' }}</span>
+        </div>
+        <div class="detail-row">
+          <strong>Created At:</strong>
+          <span>{{ selectedLegalMatter.createdAt | date:'dd MMM yyyy HH:mm' }}</span>
+        </div>
+        <div class="detail-row">
+          <strong>Last Modified:</strong>
+          <span>{{ selectedLegalMatter.lastModified ? (selectedLegalMatter.lastModified | date:'dd MMM yyyy HH:mm') : 'Never' }}</span>
+        </div>
+        <div class="detail-row">
+          <strong>Lawyer ID:</strong>
+          <span>{{ selectedLegalMatter.lawyerId || 'Not assigned' }}</span>
+        </div>
+      </div>
+      <div class="form-actions">
+        <button 
+          type="button" 
+          (click)="closeDetailsModal()"
+          class="button button--secondary">
+          Close
+        </button>
+        <button 
+          type="button" 
+          (click)="editLegalMatter(selectedLegalMatter); closeDetailsModal()"
+          class="button button--primary">
+          Edit
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Lawyer Assignment Modal -->
+@if (showLawyerAssignmentModal) {
+  <app-lawyer-assignment-modal
+    [selectedLegalMatterIds]="selectedLegalMattersForAssignment"
+    [currentLawyerId]="currentLawyerIdForAssignment"
+    (assignmentComplete)="onLawyerAssignmentComplete($event)"
+    (modalClosed)="closeLawyerAssignmentModal()">
+  </app-lawyer-assignment-modal>
+}

@@ -1,0 +1,114 @@
+services:
+  # .NET WebAPI service
+  lawvu-techtest-webapi:
+    build:
+      context: .
+      dockerfile: WebApi/Dockerfile
+    image: kevykibbz/lawvu-webapi:latest
+    container_name: lawvu-techtest-webapi
+    ports:
+      - "9091:80"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:80
+      - ConnectionStrings__LawVuTechTestDB=Server=sqlserver,1433;Database=LawVuTechTestDB;User Id=sa;Password=YourPassword123!;TrustServerCertificate=true;
+      - OllamaEndpoint=http://ollama:11434
+    depends_on:
+      - sqlserver
+      - ollama
+    networks:
+      - lawvu-network
+    restart: unless-stopped
+
+  # Angular WebApp service
+  lawvu-techtest-webapp:
+    build:
+      context: WebApp
+      dockerfile: Dockerfile
+    image: kevykibbz/lawvu-webapp:latest
+    container_name: lawvu-techtest-webapp
+    ports:
+      - "4200:4200"
+    environment:
+      - NODE_ENV=development
+    volumes:
+      - ./WebApp:/app
+      - /app/node_modules
+    networks:
+      - lawvu-network
+    restart: unless-stopped
+    depends_on:
+      - lawvu-techtest-webapi
+
+  # Ollama AI service
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_models:/root/.ollama
+    environment:
+      - OLLAMA_HOST=0.0.0.0
+    networks:
+      - lawvu-network
+    restart: unless-stopped
+
+  # Ollama model initialization service
+  ollama-model-pull:
+    image: ollama/ollama:latest
+    container_name: ollama-model-pull
+    depends_on:
+      - ollama
+    networks:
+      - lawvu-network
+    restart: "no"
+    command: >
+      sh -c "
+        sleep 10 &&
+        ollama pull llama3.2:1b &&
+        ollama pull llama3.2:3b
+      "
+    environment:
+      - OLLAMA_HOST=ollama:11434
+
+  # SQL Server service
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: sqlserver
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=YourPassword123!
+      - MSSQL_PID=Express
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqlserver_data:/var/opt/mssql
+    networks:
+      - lawvu-network
+    restart: unless-stopped
+
+  # Docker Dashboard/Monitoring service
+  dashboard:
+    image: portainer/portainer-ce:latest
+    container_name: lawvu-dashboard
+    ports:
+      - "15026:9000"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer_data:/data
+    networks:
+      - lawvu-network
+    restart: unless-stopped
+
+networks:
+  lawvu-network:
+    driver: bridge
+
+volumes:
+  sqlserver_data:
+    driver: local
+  ollama_models:
+    driver: local
+  portainer_data:
+    driver: local

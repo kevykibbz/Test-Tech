@@ -1,0 +1,219 @@
+/* You can add global styles to this file, and also import other style files */
+
+@import url('https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,300;0,400;1,700&display=swap');
+
+// Reset{
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* You can add global styles to this file, and also import other style files */
+:root{
+    --black: #000000;
+    --white: #ffffff;
+    --grey: #9299A1;
+    --grey-light: #f1f2f3;
+    --teal: #00B8AF;
+    --teal-light: #24e5dc;
+    --teal-lightest: #E5F8F7;
+    --blue-black: #022F3C;
+    --text: #333333;
+
+    font-family: 'Lato', sans-serif;
+    box-sizing: border-box;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+
+
+html {
+    font-size: 62.5%;
+    letter-spacing: 0.05rem;
+    background: var(--grey-light);
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+}
+
+body{
+    font-size: 1.4rem;
+    color: var(--black);
+}
+
+// Typography
+h1,h2,h3,h4,h5,h6{margin:0px;}
+h1 { font-size: 2.8rem }
+h2 { font-size: 2.4rem }
+h3 { font-size: 2rem }
+h4 { font-size: 1.6rem }
+h5 { font-size: 1.4rem }
+h6 { font-size: 1rem }
+
+a {
+    text-decoration: none;
+    color: var(--teal);
+}
+
+
+p,li{
+    font-size: 16px;
+}
+
+hr{
+    opacity:0.4;
+}
+
+pre{
+    padding:2rem;
+    border-radius: 0.5rem;
+    background-color: var(--teal-lightest);
+    font-size: 1.4rem;
+    border:1px solid var(--teal);
+    white-space: break-spaces;
+}
+
+// Buttons
+.button {
+    transition: background-color,.3s ease-out;
+    font-weight: 700;
+    display: inline-block;
+    text-decoration: none;
+    border: 1px solid transparent;
+    outline: 0!important;
+    cursor: pointer;
+    white-space: nowrap;
+    border-radius: .3rem;
+    text-align: center;
+    padding: 1rem;
+    font-size: 1.3rem;
+ 
+
+    & + .button {
+        margin-left: .5rem;
+    }
+
+    &--primary{
+        background: var(--teal);
+        color: #fff;
+
+        &:hover {
+            background: var(--teal-light);
+        }
+    }
+}
+
+// Tables
+table {
+    width: 100%;
+    border-collapse: collapse;
+    border:none;
+
+    caption {
+        text-transform: uppercase;
+        font-weight: bold;
+        color: var(--grey-light);
+        text-align: center;
+    }
+    thead {
+        border-top:transparent;
+        border-bottom: 2px solid var(--grey-light);
+        th {
+            text-transform: uppercase;
+            text-align: left;
+            padding: 10px;
+            color: var(--grey);
+            border-width: 0 1px 1px 1px;
+            border-color: var(--grey-light);
+            border-style: solid;
+
+            &:nth-child(4),
+            &:nth-child(5),
+            &:nth-child(6),
+            &:nth-child(7){
+                text-align: right;
+            }
+        }
+    }
+    tbody {
+        tr {
+            border-bottom: 1px solid var(--grey-light);
+            color: var(--grey-light);
+            transition: all .3s ease-out;
+
+            &:hover{
+                background: var(--grey-light);
+            }
+
+            td {
+                padding: 10px;
+                border-bottom: 1px solid var(--grey-light);
+                color:var(--black);
+                opacity: 0.8;
+                font-size: 1.4rem;
+                vertical-align: middle;
+
+                &:nth-child(4),
+                &:nth-child(5),
+                &:nth-child(6),
+                &:nth-child(7){
+                    text-align: right;
+                }
+            }
+        }
+    }
+    tfoot {
+        color: var(--grey-light);
+        font-style: italic;
+        border-bottom: 2px solid var(--grey-light);
+        tr {
+            td {
+                padding: 10px;
+                border: 1px solid #F1F1F1;
+            }
+        }
+    }
+}
+
+
+// Forms
+form{
+    padding: 2rem 0;
+    max-width: 50%;
+
+    > div {
+        display:flex;
+        margin-bottom: 1rem;
+    }
+
+    > button {
+        margin-top:2rem;
+    }
+}
+
+label {
+    width: 25%;
+    font-weight: 700;
+    font-size: 1.3rem;
+    line-height: 1;
+    color: #273545;
+    padding: .3rem 0;
+    display: block;
+}
+
+input, select{
+    appearance: none;
+    transition: border-color,.1s ease-out;
+    padding: .7rem;
+    font-size: 1.4rem;
+    font-weight: 400;
+    border-radius: .25rem;
+    border: 1px solid #dfe1e4;
+    white-space: pre-wrap;
+    color: #485461;
+    width: 100%;
+    background-color: #fff;
+    box-sizing: border-box;
+}

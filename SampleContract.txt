@@ -1,0 +1,89 @@
+SOFTWARE LICENSE AGREEMENT
+
+This Software License Agreement ("Agreement") is made and entered into on February 15, 2024, between:
+
+LICENSOR:
+TechSolutions Inc.
+1234 Innovation Drive
+San Francisco, CA 94105
+United States
+
+LICENSEE:
+BusinessCorp LLC
+5678 Enterprise Blvd
+Austin, TX 78701
+United States
+
+WHEREAS, Licensor owns certain proprietary software known as "DataAnalyzer Pro" ("Software"); and
+WHEREAS, Licensee desires to obtain a license to use the Software for its business operations;
+
+NOW, THEREFORE, in consideration of the mutual covenants contained herein, the parties agree as follows:
+
+1. LICENSE GRANT
+Licensor hereby grants to Licensee a non-exclusive, non-transferable license to use the Software for internal business purposes only.
+
+2. FINANCIAL TERMS
+- Initial License Fee: $50,000 (Fifty Thousand Dollars)
+- Annual Maintenance Fee: $10,000 (Ten Thousand Dollars)
+- Payment Terms: Net 30 days from invoice date
+- Total Contract Value: $80,000 for first year
+
+3. TERM AND TERMINATION
+- Effective Date: February 15, 2024
+- Initial Term: 3 (three) years
+- Expiration Date: February 14, 2027
+- Either party may terminate with 60 days written notice
+- Automatic renewal for additional 1-year terms unless terminated
+
+4. KEY OBLIGATIONS
+- Licensee shall use Software only for authorized purposes
+- Licensee shall not reverse engineer or modify the Software
+- Licensor shall provide technical support during business hours
+- Licensor shall deliver software updates and patches
+
+5. CONFIDENTIALITY
+Both parties acknowledge that they may have access to confidential information. Each party agrees to:
+- Maintain strict confidentiality of proprietary information
+- Use confidential information solely for purposes of this Agreement
+- Return all confidential materials upon termination
+
+6. INTELLECTUAL PROPERTY
+- All rights, title, and interest in the Software remain with Licensor
+- Licensee obtains no ownership rights in the Software
+- All derivative works created by Licensor remain Licensor's property
+
+7. TERMINATION CONDITIONS
+This Agreement may be terminated:
+- By mutual written consent of both parties
+- By either party for material breach, with 30 days cure period
+- Immediately by Licensor if Licensee fails to pay fees
+- Upon expiration of the term if not renewed
+
+8. GOVERNING LAW
+This Agreement shall be governed by and construed in accordance with the laws of the State of California, without regard to conflict of law principles.
+
+9. DISPUTE RESOLUTION
+Any disputes arising under this Agreement shall be resolved through binding arbitration in San Francisco, California, under the rules of the American Arbitration Association.
+
+10. ENTIRE AGREEMENT
+This Agreement constitutes the entire agreement between the parties and supersedes all prior negotiations, representations, or agreements relating to the subject matter hereof.
+
+IN WITNESS WHEREOF, the parties have executed this Agreement as of the date first written above.
+
+LICENSOR:                          LICENSEE:
+TechSolutions Inc.                 BusinessCorp LLC
+
+By: _________________________      By: _________________________
+Name: John Smith                   Name: Sarah Johnson
+Title: Chief Executive Officer     Title: Chief Technology Officer
+Date: February 15, 2024           Date: February 15, 2024
+
+EXHIBIT A - SOFTWARE SPECIFICATIONS
+- Software Name: DataAnalyzer Pro v3.2
+- Supported Platforms: Windows 10/11, macOS 12+, Linux Ubuntu 20.04+
+- Maximum Users: 100 concurrent users
+- Data Processing Capacity: Up to 10TB per month
+- Integration APIs: REST, GraphQL, SOAP
+
+CONTRACT SUMMARY:
+This is a software license agreement between TechSolutions Inc. (licensor) and BusinessCorp LLC (licensee) for DataAnalyzer Pro software. The contract has a total value of $80,000 for the first year, runs for 3 years from February 15, 2024 to February 14, 2027, and includes comprehensive licensing terms, financial obligations, and termination conditions.

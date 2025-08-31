@@ -1,0 +1,55 @@
+1. Integration with Ollama: Focus on getting the prompts right and extracting the relevant data from legal documents.
+2.	API Endpoints: Build the API to accept documents and return structured data.
+3.	Environment Setup: Ensure everything works smoothly with Docker and WSL2.
+
+The client:
+This is in general she needs
+The client wants a Web API in .NET 8 that can create and return a LegalMatter object. On top of that, the API must use Ollama (LLM) to extract structured data from legal documents (like parties, dates, clauses, terms) and return it in a structured format. The Ollama client code is already there, so the main work is writing prompts, handling responses, and exposing proper API endpoints. Docker/WSL2 setup is required to make sure everything runs smoothly.
+
+
+1. LegalMatter Object Review
+	•	Task:
+	•	Review the LegalMatter object, which is a simple structure with Id and MatterName.
+	•	Confirm if additional fields or properties need to be added to the LegalMatter object for more detailed contract data (such as clauses, parties, dates, etc.).
+
+⸻
+
+2. Ollama Integration Review
+	•	Task:
+	•	Verify the integration with Ollama via the OllamaClient.cs class.
+	•	Review the GenerateAsync method, which is designed to send prompts to Ollama and receive responses.
+	•	Understand how Ollama will process legal documents and return structured data.
+	•	Prepare specific prompts for contract extraction, ensuring they are tailored to capture key data points like involved parties, contract clauses, important dates, and termination conditions.
+
+⸻
+
+3. API Endpoint Setup
+	•	Task:
+	•	Create a POST endpoint for contract extraction:
+	•	The endpoint should accept legal documents (via text or file upload).
+	•	It should send the document to Ollama for processing and return the extracted data in a structured format (e.g., parties, clauses, dates).
+	•	Create a GET endpoint to retrieve a sample LegalMatter object.
+	•	This could be a simple endpoint that returns a test object or previously processed data.
+
+⸻
+
+4. Data Handling and Mapping
+	•	Task:
+	•	Once the response is received from Ollama, map the extracted data into a usable structure (either the LegalMatter object or a separate DTO).
+	•	Make sure the extracted data is organized and ready to be returned as a JSON response to the client.
+
+⸻
+
+5. Environment Setup
+	•	Task:
+	•	Ensure that the project works with Docker + WSL2. Follow the setup instructions provided in the README to make sure everything is compatible and ready to run.
+	•	Verify that Visual Studio 2022 is set up with the required workloads for building and running the .NET API.
+
+⸻
+
+6. Testing and Debugging
+	•	Task:
+	•	Test the API endpoints to ensure they work as expected.
+	•	Focus on testing the contract extraction functionality, ensuring the prompts correctly extract the required data from documents.
+	•	Test edge cases such as incomplete documents or missing data to ensure the system handles errors gracefully.
+	•	Ensure proper logging for both requests and responses, especially for debugging any issues with Ollama integration.
