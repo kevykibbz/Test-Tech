@@ -20,12 +20,15 @@ public class LegalRepository : ILegalRepository
     }
 
     public async Task<IReadOnlyList<DbLegalMatter>> GetLegalMattersAsync(int skip = 0, int take = 100) => await _techTestDbContext.Matter
+        .Include(m => m.Lawyer)
         .Skip(skip)
         .Take(take)
         .ToListAsync()
         .ConfigureAwait(continueOnCapturedContext: false);
 
-    public Task<DbLegalMatter?> GetLegalMatterAsync(Guid id) => _techTestDbContext.Matter.FirstOrDefaultAsync(x => x.Id == id);
+    public Task<DbLegalMatter?> GetLegalMatterAsync(Guid id) => _techTestDbContext.Matter
+        .Include(m => m.Lawyer)
+        .FirstOrDefaultAsync(x => x.Id == id);
 
     public async Task<int> GetTotalCountAsync() => await _techTestDbContext.Matter.CountAsync().ConfigureAwait(false);
 
@@ -70,6 +73,7 @@ public class LegalRepository : ILegalRepository
     public async Task<IReadOnlyList<DbLegalMatter>> GetLegalMattersByLawyerAsync(Guid lawyerId)
     {
         return await _techTestDbContext.Matter
+            .Include(m => m.Lawyer)
             .Where(m => m.LawyerId == lawyerId)
             .OrderByDescending(m => m.CreatedAt)
             .ToListAsync()

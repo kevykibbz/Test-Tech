@@ -19,6 +19,12 @@ public class TechTestDbContext(DbContextOptions<TechTestDbContext> options) : Db
         base.OnModelCreating(modelBuilder);
 
         // Configure relationships
+        modelBuilder.Entity<DbLegalMatter>()
+            .HasOne(m => m.Lawyer)
+            .WithMany()
+            .HasForeignKey(m => m.LawyerId)
+            .OnDelete(DeleteBehavior.SetNull);
+
         modelBuilder.Entity<DbEventType>()
             .HasOne(e => e.Group)
             .WithMany(g => g.EventTypes)

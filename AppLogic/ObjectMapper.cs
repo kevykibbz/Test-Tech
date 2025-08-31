@@ -36,7 +36,12 @@ public class ObjectMapper : IObjectMapper
         matter.Status,
         matter.Description,
         matter.CreatedAt,
-        matter.LastModified
+        matter.LastModified,
+        matter.CategoryId,
+        matter.ManagerId,
+        matter.DueDate,
+        matter.EstimatedCost,
+        matter.Currency
     ) 
     { 
         LawyerId = matter.LawyerId 
@@ -54,10 +59,18 @@ public class ObjectMapper : IObjectMapper
         matter.Status,
         matter.Description,
         matter.CreatedAt,
-        matter.LastModified
+        matter.LastModified,
+        matter.CategoryId,
+        matter.ManagerId,
+        matter.DueDate,
+        matter.EstimatedCost,
+        matter.Currency
     ) 
     { 
-        LawyerId = matter.LawyerId 
+        LawyerId = matter.LawyerId,
+        LawyerFirstName = matter.Lawyer?.FirstName,
+        LawyerLastName = matter.Lawyer?.LastName,
+        LawyerCompany = matter.Lawyer?.CompanyName
     };
     
     private static DbLawyer Map(Lawyer lawyer) => new(lawyer.Id, lawyer.FirstName, lawyer.LastName, lawyer.CompanyName);

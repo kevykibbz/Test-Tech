@@ -97,6 +97,7 @@ public class LawyerRepository : ILawyerRepository
 
     public async Task<IReadOnlyList<DbLegalMatter>> GetLawyerMattersAsync(Guid lawyerId) =>
         await _techTestDbContext.Matter
+            .Include(m => m.Lawyer)
             .Where(m => m.LawyerId == lawyerId)
             .ToListAsync()
             .ConfigureAwait(false);

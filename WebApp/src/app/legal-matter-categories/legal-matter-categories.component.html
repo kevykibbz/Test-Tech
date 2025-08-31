@@ -1,9 +1,11 @@
 <div class="categories-container">
   <h2>Legal Matter Categories</h2>
   
-  <div class="loading" *ngIf="loading">
-    Loading...
-  </div>
+  @if (loading()) {
+    <div class="loading">
+      Loading...
+    </div>
+  }
   
   @if (error()) {
     <div class="error">
@@ -47,9 +49,11 @@
         </div>
       }
       
-      <div *ngIf="!selectedCategory" class="no-details">
-        Select a category to view details
-      </div>
+      @if (!selectedCategory()) {
+        <div class="no-details">
+          Select a category to view details
+        </div>
+      }
     </div>
   </div>
 </div>
